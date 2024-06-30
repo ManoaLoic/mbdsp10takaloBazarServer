@@ -1,0 +1,2 @@
+# takaloBazarServer
+TPT - TakaloServer Server
