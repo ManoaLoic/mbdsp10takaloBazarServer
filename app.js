@@ -11,6 +11,7 @@ const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
 const typeReportRoutes = require('./routes/typeReport');
 const objectsRoute = require('./routes/objects');
+const authRoutes = require('./routes/auth');
 const defineAssociations = require('./models/associations');
 
 var app = express();
@@ -34,6 +35,7 @@ app.use(prefix+'/categories', categoryRouter);
 app.use(prefix+ '/exchange', exchangeRoutes);
 app.use(prefix+ '/typeReports', typeReportRoutes);
 app.use(prefix+ '/objects', objectsRoute);
+app.use(prefix + '/auth', authRoutes);
 
 defineAssociations();
 
