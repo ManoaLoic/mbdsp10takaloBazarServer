@@ -1,6 +1,6 @@
 const { expressjwt: jwt } = require('express-jwt');
 
-const secretKey = process.env.JWT_SECRET;
+const secretKey = process.env.SECRET_KEY;
 
 const authenticate = jwt({
     secret: secretKey,

@@ -18,7 +18,6 @@ const reportRoute = require('./routes/report');
 const defineAssociations = require('./models/associations');
 
 const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
-const secretKey = process.env.JWT_SECRET;
 var app = express();
 
 // view engine setup
