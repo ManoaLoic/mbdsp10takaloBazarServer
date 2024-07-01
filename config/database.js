@@ -7,7 +7,12 @@ const sequelize = new Sequelize('postgres://postgres.ypltzdhbkbcflygsytuz:tpt-lo
     ssl: {
       require: true,
       rejectUnauthorized: false // This is important to avoid SSL certificate errors
-    }
+    },
+    charset: 'utf8',
+  },
+  define: {
+    charset: 'utf8',
+    collate: 'utf8_general_ci'
   }
 });
 
