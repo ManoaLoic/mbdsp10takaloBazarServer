@@ -1,9 +1,11 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+const { authenticate, authorize } = require('./middleware/auth');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -12,8 +14,11 @@ const exchangeRoutes = require('./routes/exchange');
 const typeReportRoutes = require('./routes/typeReport');
 const objectsRoute = require('./routes/objects');
 const authRoutes = require('./routes/auth');
+const reportRoute = require('./routes/report');
 const defineAssociations = require('./models/associations');
 
+const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
+const secretKey = process.env.JWT_SECRET;
 var app = express();
 
 // view engine setup
@@ -30,25 +35,30 @@ app.use(cors());
 const prefix = "/api";
 
 app.use('/', indexRouter);
-app.use(prefix+'/users', usersRouter);
-app.use(prefix+'/categories', categoryRouter);
-app.use(prefix+ '/exchange', exchangeRoutes);
-app.use(prefix+ '/typeReports', typeReportRoutes);
-app.use(prefix+ '/objects', objectsRoute);
+app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
+app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
+app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
+app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
+app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
+app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
 app.use(prefix + '/auth', authRoutes);
 
 defineAssociations();
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
   // render the error page
   res.status(err.status || 500);
