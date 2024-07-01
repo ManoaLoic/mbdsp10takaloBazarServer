@@ -1,13 +1,13 @@
 const ReportRepository = require('../service/ReportRepository');
 
 exports.createReport = async (req, res) => {
-  const { objectId, reason } = req.body;
-  if (!objectId || !reason) {
+  const { object_id, reason } = req.body;
+  if (!object_id || !reason) {
     return res.status(400).json({ error: 'Tous les champs sont requis' });
   }
   try {
-    const reporterUserId = 1;
-    const newReport = await ReportRepository.save({ objectId, reporterUserId, reason });
+    const reporter_user_id = req.user.id;
+    const newReport = await ReportRepository.save({ object_id, reporter_user_id, reason });
     return res.status(201).json(newReport);
   } catch (error) {
     console.error('Erreur lors de la création du rapport:', error);

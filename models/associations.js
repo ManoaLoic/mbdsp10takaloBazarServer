@@ -28,9 +28,9 @@ function defineAssociations() {
 
     Report.belongsTo(Object, { foreignKey: 'object_id' });
     Report.belongsTo(User, { foreignKey: 'reporter_user_id' });
-    Report.belongsTo(TypeReport, { foreignKey: 'type_report_id' });
+    // Report.belongsTo(TypeReport, { foreignKey: 'type_report_id' });
 
-    TypeReport.hasMany(Report, { foreignKey: 'type_report_id' });
+    // TypeReport.hasMany(Report, { foreignKey: 'type_report_id' });
 }
 
 module.exports = defineAssociations;
