@@ -16,6 +16,8 @@ const objectsRoute = require('./routes/objects');
 const reportRoute = require('./routes/report');
 const defineAssociations = require('./models/associations');
 
+const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
+const secretKey = process.env.JWT_SECRET;
 var app = express();
 
 // view engine setup
@@ -32,12 +34,12 @@ app.use(cors());
 const prefix = "/api";
 
 app.use('/', indexRouter);
-app.use(prefix + '/users', authenticate, authorize(['admin']), usersRouter);
-app.use(prefix + '/categories', authenticate, authorize(['admin', 'simpleUser']), categoryRouter);
-app.use(prefix + '/exchange', authenticate, authorize(['admin', 'simpleUser']), exchangeRoutes);
-app.use(prefix + '/typeReports', authenticate, authorize(['admin']), typeReportRoutes);
-app.use(prefix + '/objects', authenticate, authorize(['admin', 'simpleUser']), objectsRoute);
-app.use(prefix + '/reports', authenticate, authorize(['admin', 'simpleUser']), reportRoute);
+app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
+app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
+app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
+app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
+app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
+app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
 
 defineAssociations();
 

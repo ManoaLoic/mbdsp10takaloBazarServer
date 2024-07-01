@@ -5,6 +5,7 @@ const secretKey = process.env.JWT_SECRET;
 const authenticate = jwt({
     secret: secretKey,
     algorithms: ['HS256'],
+    requestProperty: 'user',
 });
 
 const authorize = (roles) => (req, res, next) => {
