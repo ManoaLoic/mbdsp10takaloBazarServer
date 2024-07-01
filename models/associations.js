@@ -7,13 +7,13 @@ const Report = require('./Report');
 const TypeReport = require('./TypeReport');
 
 function defineAssociations() {
-    User.hasMany(Exchange, { foreignKey: 'proposer_user_id' });
-    User.hasMany(Exchange, { foreignKey: 'receiver_user_id' });
+    User.hasMany(Exchange, { as: 'ProposedExchanges',foreignKey: 'proposer_user_id' });
+    User.hasMany(Exchange, { as: 'ReceivedExchanges',foreignKey: 'receiver_user_id' });
     User.hasMany(ExchangeObject, { foreignKey: 'user_id' });
     User.hasMany(Report, { foreignKey: 'reporter_user_id' });
 
-    Exchange.belongsTo(User, { foreignKey: 'proposer_user_id' });
-    Exchange.belongsTo(User, { foreignKey: 'receiver_user_id' });
+    Exchange.belongsTo(User, { foreignKey: 'proposer_user_id', as: 'proposer' });
+    Exchange.belongsTo(User, { foreignKey: 'receiver_user_id', as: 'receiver' });
     Exchange.hasMany(ExchangeObject, { foreignKey: 'exchange_id' });
 
     ExchangeObject.belongsTo(Exchange, { foreignKey: 'exchange_id' });
