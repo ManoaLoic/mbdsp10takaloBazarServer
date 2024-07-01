@@ -37,7 +37,7 @@ function getTokenUser(user) {
     console.log('ttt',process.env.SECRET_KEY,process.env.EXPIRATION_TOKEN);
     return jwt.sign({
         email: user.email,
-        id: user._id,
+        id: user.id,
         nom: user. first_name,
         prenom: user. last_name,
         photo: user.username,
