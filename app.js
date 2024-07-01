@@ -13,6 +13,7 @@ const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
 const typeReportRoutes = require('./routes/typeReport');
 const objectsRoute = require('./routes/objects');
+const authRoutes = require('./routes/auth');
 const reportRoute = require('./routes/report');
 const defineAssociations = require('./models/associations');
 
@@ -40,6 +41,7 @@ app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_P
 app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
+app.use(prefix + '/auth', authRoutes);
 
 defineAssociations();
 
