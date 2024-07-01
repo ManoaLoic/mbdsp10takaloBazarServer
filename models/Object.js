@@ -32,9 +32,8 @@ const Object = sequelize.define('Object', {
         defaultValue: DataTypes.NOW,
     },
     status: {
-        type: DataTypes.ENUM('available', 'removed'),
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'available',
     },
     user_id: {
         type: DataTypes.INTEGER,
