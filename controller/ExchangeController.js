@@ -24,3 +24,24 @@ exports.proposerExchange = async (req, res) => {
         });
     }
 };
+
+exports.getHistoriqueExchange = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const status = req.query.status || "";
+
+        const exchangeHistory = await ExchangeRepository.getHistoriqueExchange(userId,status, page, limit);
+
+        res.status(200).json({
+            message: 'SUCCESS',
+            data: exchangeHistory
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'ERROR',
+            error: error.message
+        });
+    }
+};

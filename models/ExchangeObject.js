@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Exchange = require('./Exchange');
 const Object = require('./Object');
+const User = require('./User');
 
 const ExchangeObject = sequelize.define('ExchangeObject', {
     id: {
@@ -28,6 +29,10 @@ const ExchangeObject = sequelize.define('ExchangeObject', {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: User,
+            key: 'id',
+        },
     },
 }, {
     tableName: 'ExchangeObject',
