@@ -34,13 +34,12 @@ exports.login = async (username,pwd,type) => {
 
 
 function getTokenUser(user) {
-    console.log('ttt',process.env.SECRET_KEY,process.env.EXPIRATION_TOKEN);
     return jwt.sign({
         email: user.email,
-        id: user.id,
-        nom: user. first_name,
-        prenom: user. last_name,
-        photo: user.username,
+        id: user._id,
+        first_name: user. first_name,
+        last_name: user. last_name,
+        username: user.username,
         type: user.type,
     }, process.env.SECRET_KEY, {
         expiresIn: process.env.EXPIRATION_TOKEN
