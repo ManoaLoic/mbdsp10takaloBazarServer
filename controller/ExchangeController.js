@@ -45,3 +45,25 @@ exports.getHistoriqueExchange = async (req, res) => {
         });
     }
 };
+
+exports.rejectExchange = async (req, res) => {
+    const { exchangeId } = req.params;
+    const { note } = req.body;
+    if (!note) {
+      return res.status(400).json({ error: 'Veuillez préciser la raison du rejet de l\'échange.' });
+    }
+
+    try {
+      const updatedExchange = await ExchangeRepository.rejectExchange(exchangeId, note,req.user.id);
+      if (!updatedExchange) {
+        return res.status(404).json({ error: 'Échange non trouvé' });
+      }
+      if(updatedExchange == 1){
+        return res.status(403).json({ error: 'Vous ne pouvez pas rejeter cet échange, car vous n\'êtes pas la personne associée à cet échange.' });
+      }
+      return res.status(200).json({ message: 'Échange rejeté avec succès', exchange: updatedExchange });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut de l\'échange:', error);
+      return res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+  }
