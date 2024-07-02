@@ -28,3 +28,15 @@ exports.loginUser = async (req, res) => {
       .json({ error: "Erreur interne du serveur: " + error.message });
   }
 };
+
+exports.getUserProfile = async (req, res) => {
+  try {
+      const userProfile = await UserRepository.getUserProfile(req.params.userId);
+      res.status(200).json({
+        message : "SUCCESS",
+        user : userProfile
+      });
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+};

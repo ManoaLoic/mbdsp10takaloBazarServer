@@ -45,3 +45,30 @@ function getTokenUser(user) {
         expiresIn: process.env.EXPIRATION_TOKEN
     });
 }
+
+// Fiche Utilisateur
+exports.getUserProfile = async (userId) => {
+    try {
+        console.log("ato");
+        const user = await User.findByPk(userId, {
+            attributes: ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture', 'gender', 'created_at']
+        });
+
+        if (!user) {
+            throw new Error('Utilisateur non trouvé!');
+        }
+
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            profile_picture: user.profile_picture,
+            gender: user.gender,
+            created_at: user.created_at,
+        };
+    } catch (err) {
+        throw err;
+    }
+};
