@@ -16,6 +16,7 @@ const objectsRoute = require('./routes/objects');
 const authRoutes = require('./routes/auth');
 const reportRoute = require('./routes/report');
 const defineAssociations = require('./models/associations');
+const exchangeObjectRoute = require('./routes/exchangeObject');
 
 const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
 var app = express();
@@ -41,6 +42,7 @@ app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE]), typeR
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
 app.use(prefix + '/auth', authRoutes);
+app.use(prefix + '/exchangeObjects',authenticate,authorize([ADMIN_PROFILE, STANDARD_PROFILE]),exchangeObjectRoute);
 
 defineAssociations();
 
