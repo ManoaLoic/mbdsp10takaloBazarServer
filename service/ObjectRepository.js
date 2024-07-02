@@ -18,6 +18,20 @@ class ObjectRepository {
       currentPage: page,
     };
   }
+  async removeObject(objectId){
+    try {
+      const object = await ObjectModel.findByPk(objectId);
+      if (!object) {
+        return null;
+      }
+      object.status = 'Removed';
+      await object.save();
+      return object;
+    } catch (error) {
+      console.error('Error updating object status:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new ObjectRepository();
