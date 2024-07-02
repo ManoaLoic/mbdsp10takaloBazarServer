@@ -1,13 +1,22 @@
+const { Op } = require('sequelize');
 const Category = require('../models/Category');
 
 class CategoryRepository {
-  async findAll() {
-    try {
-      return await Category.findAll();
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      throw error;
-    }
+  async getCategories(name, page, limit) {
+    const offset = (page - 1) * limit;
+    const where = name ? { name: { [Op.iLike]: `%${name}%` } } : {};
+
+    const { rows, count } = await Category.findAndCountAll({
+      where,
+      offset,
+      limit,
+    });
+
+    return {
+      categories: rows,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    };
   }
 
   // Modifier Category

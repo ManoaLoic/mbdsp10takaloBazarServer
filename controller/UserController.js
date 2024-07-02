@@ -31,12 +31,30 @@ exports.loginUser = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-      const userProfile = await UserRepository.getUserProfile(req.params.userId);
-      res.status(200).json({
-        message : "SUCCESS",
-        user : userProfile
-      });
+    const userProfile = await UserRepository.getUserProfile(req.params.userId);
+    res.status(200).json({
+      message: "SUCCESS",
+      user: userProfile
+    });
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.register = async (req, res) => {
+  const { username, password, email, first_name, last_name, gender } = req.body;
+  if (!username || !password || !email || !first_name || !last_name || !gender) {
+    return res.status(400).json({ error: 'Tous les champs sont obligatoires pour une inscription' });
+  }
+
+  try {
+    const result = await UserRepository.register({ username, password, email, first_name, last_name, gender });
+    return res.status(201).json(result);
+  } catch (error) {
+    console.error('Error during registration:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ error: 'Username ou Email déja existant' });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
