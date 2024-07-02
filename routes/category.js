@@ -12,5 +12,6 @@ router.get('/', async (req, res) => {
     }
 });
 router.put('/:id', categoryController.updateCategory);
+router.post('/', categoryController.addCategory);
 
 module.exports = router;

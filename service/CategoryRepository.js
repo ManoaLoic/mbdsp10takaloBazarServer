@@ -24,6 +24,16 @@ class CategoryRepository {
       throw error;
     }
   }
+
+  async addCategory(category) {
+    try {
+      const newCategory = await Category.create({ name: category });
+      return newCategory;
+    } catch (error) {
+      console.error('Error adding category:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new CategoryRepository();
