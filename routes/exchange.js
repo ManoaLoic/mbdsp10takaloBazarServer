@@ -5,4 +5,5 @@ const exchangeController = require('../controller/ExchangeController');
 
 router.post('/proposed', exchangeController.proposerExchange);
 router.get('/history/:userId', exchangeController.getHistoriqueExchange);
+router.patch('/:exchangeId/reject', exchangeController.rejectExchange);
 module.exports = router;

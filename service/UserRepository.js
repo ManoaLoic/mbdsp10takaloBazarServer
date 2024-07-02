@@ -36,7 +36,7 @@ exports.login = async (username,pwd,type) => {
 function getTokenUser(user) {
     return jwt.sign({
         email: user.email,
-        id: user._id,
+        id: user.id,
         first_name: user. first_name,
         last_name: user. last_name,
         username: user.username,

@@ -113,3 +113,23 @@ exports.getHistoriqueExchange = async (userId,status, page, limit) => {
         throw err;
     }
 };
+
+exports.rejectExchange = async (exchangeId, note, userId) => {
+    try {
+      const exchange = await Exchange.findByPk(exchangeId);
+      if (!exchange) {
+        return null;
+      }
+      if(exchange.receiver_user_id != userId){
+        return 1;
+      }
+      exchange.status = 'Refused';
+      exchange.note = note;
+      exchange.date = new Date();
+      await exchange.save();
+      return exchange;
+    } catch (error) {
+      console.error('Error updating exchange status:', error);
+      throw error;
+    }
+}

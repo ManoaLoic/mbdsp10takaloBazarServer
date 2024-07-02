@@ -35,6 +35,10 @@ const Object = sequelize.define('Object', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
