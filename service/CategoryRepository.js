@@ -1,5 +1,7 @@
 const { Op } = require('sequelize');
 const Category = require('../models/Category');
+const Object = require('../models/Object');
+const Sequelize = require('sequelize');
 
 class CategoryRepository {
   async getCategories(name, page, limit) {
@@ -40,6 +42,31 @@ class CategoryRepository {
       return newCategory;
     } catch (error) {
       console.error('Error adding category:', error);
+      throw error;
+    }
+  }
+
+  async getCategoryStatistics() {
+    try {
+      const counts = await Category.findAll({
+        attributes: [
+          'id',
+          'name',
+          [Sequelize.fn('COUNT', Sequelize.col('Objects.id')), 'object_count']
+        ],
+        include: [
+          {
+            model: Object,
+            as: 'Objects',
+            attributes: [],
+          }
+        ],
+        group: ['Category.id'],
+        order: [['name', 'ASC']],
+      });
+      return counts;
+    } catch (error) {
+      console.error('Error counting objects by category:', error);
       throw error;
     }
   }

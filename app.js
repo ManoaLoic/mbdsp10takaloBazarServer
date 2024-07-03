@@ -13,6 +13,7 @@ const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
 const typeReportRoutes = require('./routes/typeReport');
 const objectsRoute = require('./routes/objects');
+const objectRoute = require('./routes/object');
 const authRoutes = require('./routes/auth');
 const reportsRoute = require('./routes/reports');
 const reportRoute = require('./routes/report');
@@ -45,6 +46,7 @@ app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
+app.use(prefix + '/object', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportsRoute);
 app.use(prefix + '/report', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
 app.use(prefix + '/exchangeObjects',authenticate,authorize([ADMIN_PROFILE, STANDARD_PROFILE]),exchangeObjectRoute);
