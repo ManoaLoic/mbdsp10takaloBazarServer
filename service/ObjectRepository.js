@@ -2,9 +2,12 @@ const { Op } = require('sequelize');
 const ObjectModel = require('../models/Object'); // Adjust the path as necessary
 
 class ObjectRepository {
-  async getObjects(name, page, limit) {
+  async getObjects(name, page, limit, userId) {
     const offset = (page - 1) * limit;
-    const where = name ? { name: { [Op.iLike]: `%${name}%` } } : {};
+    const where = {
+      ...(name && { name: { [Op.iLike]: `%${name}%` } }),
+      ...(userId && { user_id: userId })
+    };
 
     const { rows, count } = await ObjectModel.findAndCountAll({
       where,
@@ -18,7 +21,8 @@ class ObjectRepository {
       currentPage: page,
     };
   }
-  async removeObject(objectId){
+
+  async removeObject(objectId) {
     try {
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
@@ -34,15 +38,15 @@ class ObjectRepository {
   }
 
   // Modifier Object
-  async updateObject(objectId,data){
-    try{
+  async updateObject(objectId, data) {
+    try {
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
-          throw new Error('Pas de résultat!');
+        throw new Error('Pas de résultat!');
       }
       await object.update(data);
       return object;
-    }catch(error){
+    } catch (error) {
       throw error;
     }
   }
