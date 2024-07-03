@@ -14,3 +14,16 @@ exports.createReport = async (req, res) => {
     return res.status(500).json({ error: 'Erreur interne du serveur: ' + error.message });
   }
 };
+
+exports.listReportedObjects = async (req, res) => {
+  try {
+      const { page = 1, limit = 10 } = req.query;
+      const reportedObjects = await ReportRepository.getReportedObjects(parseInt(page), parseInt(limit));
+      res.status(200).json({
+        message : "SUCCESS",
+        data : reportedObjects
+      });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
