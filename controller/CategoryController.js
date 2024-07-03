@@ -52,3 +52,15 @@ exports.addCategory = async (req, res) => {
     return res.status(500).json({ error: 'Erreur interne du serveur:' + error.message });
   }
 }
+
+exports.getCategoryStatistics = async (req, res) => {
+  try {
+    const counts = await categoryRepository.getCategoryStatistics();
+    return res.status(200).json(counts);
+  } catch (error) {
+    console.error("Erreur lors du comptage des objets par catégorie:", error);
+    return res
+      .status(500)
+      .json({ error: "Erreur interne du serveur:" + error.message });
+  }
+};
