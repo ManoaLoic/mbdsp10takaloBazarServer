@@ -20,8 +20,8 @@ function defineAssociations() {
     ExchangeObject.belongsTo(Object, { foreignKey: 'object_id' });
     ExchangeObject.belongsTo(User, { foreignKey: 'user_id' });
 
-    Object.belongsTo(User, { foreignKey: 'user_id' });
-    Object.belongsTo(Category, { foreignKey: 'category_id' });
+    Object.belongsTo(User, {as: 'user', foreignKey: 'user_id' });
+    Object.belongsTo(Category, { as: 'category',foreignKey: 'category_id' });
     Object.hasMany(ExchangeObject, { foreignKey: 'object_id' });
 
     Category.hasMany(Object, { foreignKey: 'category_id' });
