@@ -32,6 +32,20 @@ class ObjectRepository {
       throw error;
     }
   }
+
+  // Modifier Object
+  async updateObject(objectId,data){
+    try{
+      const object = await ObjectModel.findByPk(objectId);
+      if (!object) {
+          throw new Error('Pas de résultat!');
+      }
+      await object.update(data);
+      return object;
+    }catch(error){
+      throw error;
+    }
+  }
 }
 
 module.exports = new ObjectRepository();

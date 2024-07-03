@@ -37,3 +37,17 @@ exports.removeObject = async (req,res) => {
       return res.status(500).json({ error: 'Erreur interne du serveur: '+ error.message });
     }
 }
+
+exports.updateObject = async (req, res) => {
+    try {
+        const objectId = req.params.id;
+        const data = req.body;
+        const updatedObject = await ObjectRepository.updateObject(objectId,data);
+        res.status(200).json({
+            message : "SUCCESS",
+            data : updatedObject
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
