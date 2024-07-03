@@ -1,5 +1,23 @@
 const ReportRepository = require('../service/ReportRepository');
 
+exports.getReport = async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const report = await ReportRepository.getReportById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    res.status(200).json(report);
+  } catch (error) {
+    res.status(500).json({
+      message: 'ERROR',
+      error: error.message,
+    });
+  }
+};
+
 exports.createReport = async (req, res) => {
   const { object_id, reason } = req.body;
   if (!object_id || !reason) {
@@ -17,13 +35,13 @@ exports.createReport = async (req, res) => {
 
 exports.listReportedObjects = async (req, res) => {
   try {
-      const { page = 1, limit = 10 } = req.query;
-      const reportedObjects = await ReportRepository.getReportedObjects(parseInt(page), parseInt(limit));
-      res.status(200).json({
-        message : "SUCCESS",
-        data : reportedObjects
-      });
+    const { page = 1, limit = 10 } = req.query;
+    const reportedObjects = await ReportRepository.getReportedObjects(parseInt(page), parseInt(limit));
+    res.status(200).json({
+      message: "SUCCESS",
+      data: reportedObjects
+    });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
