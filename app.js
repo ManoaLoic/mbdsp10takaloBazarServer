@@ -42,7 +42,7 @@ app.use(prefix + '/register', registerRoute);
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
-app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
+app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
 app.use(prefix + '/exchangeObjects',authenticate,authorize([ADMIN_PROFILE, STANDARD_PROFILE]),exchangeObjectRoute);
