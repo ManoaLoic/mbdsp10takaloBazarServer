@@ -68,6 +68,15 @@ class ObjectRepository {
       throw error;
     }
   }
+
+  async createObject(data) {
+    try {
+      return await ObjectModel.create(data);
+    } catch (error) {
+      console.error('Error creating object:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new ObjectRepository();

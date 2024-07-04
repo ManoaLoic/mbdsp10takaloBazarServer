@@ -1,4 +1,41 @@
 const ObjectRepository = require("../service/ObjectRepository");
+const path = require('path');
+const { validationResult, check } = require('express-validator');
+
+exports.createObject = [
+    check('name').notEmpty().withMessage('Le nom est requis.'),
+    check('description').notEmpty().withMessage('La description est requise.'),
+    check('status').notEmpty().withMessage('Le statut est requis.'),
+    check('date').isISO8601().withMessage('La date doit être au format ISO 8601.'),
+    check('user_id').isInt().withMessage('L\'ID utilisateur doit être un entier.'),
+    check('category_id').isInt().withMessage('L\'ID de la catégorie doit être un entier.'),
+  
+    async (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+  
+      const data = req.body;
+  
+      if (req.file) {
+        data.image = path.join('uploads', req.file.filename);
+      }
+  
+      try {
+        const newObject = await ObjectRepository.createObject(data);
+        res.status(201).json({
+          message: 'Object created successfully',
+          data: newObject,
+        });
+      } catch (error) {
+        res.status(500).json({
+          message: 'ERROR',
+          error: error.message,
+        });
+      }
+    }
+  ];
 
 exports.getObjects = async (req, res) => {
     try {
