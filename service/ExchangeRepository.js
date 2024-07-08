@@ -5,6 +5,28 @@ const Object = require("../models/Object");
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
+exports.getTopUsersByExchanges = async (limit = 10) => {
+    const query = `
+        SELECT user_id, username, COUNT(*) AS exchange_count
+        FROM (
+            SELECT proposer_user_id AS user_id FROM "Exchange"
+            UNION ALL
+            SELECT receiver_user_id AS user_id FROM "Exchange"
+        ) AS combined
+        JOIN "User" ON combined.user_id = "User".id
+        GROUP BY user_id, username
+        ORDER BY exchange_count DESC
+        LIMIT :limit;
+    `;
+
+    const result = await sequelize.query(query, {
+        replacements: { limit },
+        type: sequelize.QueryTypes.SELECT
+    });
+
+    return result;
+}
+
 exports.getOpenExchanges = async (userId) => {
     const where = {
         status: 'Proposed',

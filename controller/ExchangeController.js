@@ -1,5 +1,20 @@
 const ExchangeRepository = require('../service/ExchangeRepository');
 
+exports.getTopUsersByExchanges = async (req, res) => {
+    try {
+        const topUsers = await ExchangeRepository.getTopUsersByExchanges();
+
+        res.status(200).json({
+            data: topUsers,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "ERROR",
+            error: error.message,
+        });
+    }
+};
+
 exports.getOpenExchanges = async (req, res) => {
     try {
         const userId = req.user.id;
