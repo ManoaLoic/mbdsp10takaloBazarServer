@@ -4,25 +4,59 @@ const User = require('../models/User');
 const Category = require('../models/Category');
 
 class ObjectRepository {
-  async getObjects(name, page, limit, userId) {
+  async getObjects(filters, page = 1, limit = 50) {
     const offset = (page - 1) * limit;
-    const where = {
-      ...(name && { name: { [Op.iLike]: `%${name}%` } }),
-      ...(userId && { user_id: userId })
-    };
+    const where = {};
 
-    const { rows, count } = await ObjectModel.findAndCountAll({
+    if (filters.name) {
+      where.name = { [Op.like]: `%${filters.name}%` };
+    }
+
+    if (filters.description) {
+      where.description = { [Op.like]: `%${filters.description}%` };
+    }
+
+    if (filters.created_at_start || filters.created_at_end) {
+      where.created_at = {};
+      if (filters.created_at_start) {
+        where.created_at[Op.gte] = filters.created_at_start;
+      }
+      if (filters.created_at_end) {
+        where.created_at[Op.lte] = filters.created_at_end;
+      }
+    }
+
+    const include = [
+      {
+        model: User,
+        as: 'user',
+        where: filters.user_name ? { username: { [Op.like]: `%${filters.user_name}%` } } : undefined,
+        required: false
+      },
+      {
+        model: Category,
+        as: 'category',
+        where: filters.category_name ? { name: { [Op.like]: `%${filters.category_name}%` } } : undefined,
+        required: false
+      }
+    ];
+
+    const { rows: objects, count } = await ObjectModel.findAndCountAll({
       where,
+      include,
       offset,
       limit,
     });
 
+    const totalPages = Math.ceil(count / limit);
+
     return {
-      objects: rows,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      objects,
+      totalPages,
+      currentPage: page
     };
   }
+
   async removeObject(objectId, userId) {
     try {
       const object = await ObjectModel.findByPk(objectId);
