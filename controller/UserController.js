@@ -1,4 +1,5 @@
 const UserRepository = require("../service/UserRepository");
+require('dotenv').config();
 
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -38,7 +39,7 @@ exports.loginAdmin = async (req, res) => {
     });
   }
   try {
-    const admin = await UserRepository.login(username, password, "ADMIN");
+    const admin = await UserRepository.login(username, password, process.env.ADMIN_PROFILE);
     if (!admin) {
       return res.status(404).json({
         error: "Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.",
