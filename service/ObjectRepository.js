@@ -1,10 +1,15 @@
-const { Op } = require('sequelize');
-const ObjectModel = require('../models/Object'); // Adjust the path as necessary
+const { Op } = require("sequelize");
+const ObjectModel = require("../models/Object");
+const User = require('../models/User');
+const Category = require('../models/Category');
 
 class ObjectRepository {
-  async getObjects(name, page, limit) {
+  async getObjects(name, page, limit, userId) {
     const offset = (page - 1) * limit;
-    const where = name ? { name: { [Op.iLike]: `%${name}%` } } : {};
+    const where = {
+      ...(name && { name: { [Op.iLike]: `%${name}%` } }),
+      ...(userId && { user_id: userId })
+    };
 
     const { rows, count } = await ObjectModel.findAndCountAll({
       where,
@@ -18,31 +23,57 @@ class ObjectRepository {
       currentPage: page,
     };
   }
-  async removeObject(objectId){
+  async removeObject(objectId, userId) {
     try {
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
         return null;
       }
-      object.status = 'Removed';
+      if (object.user_id != userId) {
+        return 1;
+      }
+      object.status = "Removed";
       await object.save();
       return object;
     } catch (error) {
-      console.error('Error updating object status:', error);
+      console.error("Error updating object status:", error);
+      throw error;
+    }
+  }
+  async getObject(objectId) {
+    try {
+      const objectDetails = await ObjectModel.findByPk(objectId, {
+        include: [
+          { model: User, as: "user", attributes: ["id", "username", "email"] },
+          { model: Category, as: "category", attributes: ["id", "name"] },
+        ],
+      });
+      return objectDetails;
+    } catch (error) {
+      console.error("Error fetching object details:", error);
       throw error;
     }
   }
 
   // Modifier Object
-  async updateObject(objectId,data){
-    try{
+  async updateObject(objectId, data) {
+    try {
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
-          throw new Error('Pas de résultat!');
+        throw new Error('Pas de résultat!');
       }
       await object.update(data);
       return object;
-    }catch(error){
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createObject(data) {
+    try {
+      return await ObjectModel.create(data);
+    } catch (error) {
+      console.error('Error creating object:', error);
       throw error;
     }
   }

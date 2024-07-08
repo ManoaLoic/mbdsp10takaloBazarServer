@@ -4,7 +4,7 @@ const router = express.Router();
 const ObjectController = require('../controller/ObjectController');
 
 router.get('/', ObjectController.getObjects);
-router.patch('/:objectId/remove', ObjectController.removeObject);
 router.put('/:id', ObjectController.updateObject);
+router.post('/', ObjectController.createObject);
 
 module.exports = router;

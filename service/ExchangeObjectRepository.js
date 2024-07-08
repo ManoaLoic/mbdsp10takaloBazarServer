@@ -4,6 +4,23 @@ const User = require("../models/User");
 const Object = require("../models/Object");
 const { Op } = require('sequelize');
 
+exports.update = async (id, updateData) => {
+    try {
+        const [updated] = await ExchangeObject.update(updateData, {
+            where: { id }
+        });
+
+        if (updated) {
+            const updatedExchangeObject = await ExchangeObject.findOne({ where: { id } });
+            return updatedExchangeObject;
+        }
+
+        return null;
+    } catch (error) {
+        throw error;
+    }
+};
+
 exports.getListeExchangeObjects = async (idExchange, page, limit) => {
     try {
         const offset = (page - 1) * limit;

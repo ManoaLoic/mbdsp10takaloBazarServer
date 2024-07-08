@@ -3,6 +3,7 @@ const router = express.Router();
  
 const ReportController = require('../controller/ReportController');
 
-router.get('/:id', ReportController.getReport);
+router.post('/', ReportController.createReport);
+router.get('/', ReportController.listReportedObjects);
 
 module.exports = router;

@@ -3,6 +3,21 @@ const ExchangeObject = require("../models/ExchangeObject");
 const User = require("../models/User");
 const Object = require("../models/Object");
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
+
+exports.getCountByStatus = async (status) => {
+    try {
+        const count = await Exchange.count({
+            where: {
+                status: status
+            }
+        });
+
+        return count;
+    } catch (error) {
+        throw error;
+    }
+};
 
 // Proposer Exchange
 exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId, note, appointmentDate, meetingPlace) => {
@@ -38,15 +53,15 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
         });
 
         await Promise.all([
-            ...receiverObject.map(rcvObjet=>
+            ...receiverObject.map(rcvObjet =>
                 ExchangeObject.create({
                     exchange_id: newExchange.id,
                     object_id: rcvObjet.id,
                     user_id: rcvUserId
                 })
             ),
-        
-            ...proposerObjects.map(proposerObject => 
+
+            ...proposerObjects.map(proposerObject =>
                 ExchangeObject.create({
                     exchange_id: newExchange.id,
                     object_id: proposerObject.id,
@@ -60,8 +75,65 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
     }
 };
 
+exports.acceptExchange = async (exchangeId, userId) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const exchange = await Exchange.findByPk(exchangeId, { transaction });
+
+        if (!exchange) {
+            const error = new Error('Échange non trouvé');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        if (exchange.receiver_user_id !== userId) {
+            const error = new Error('Vous ne pouvez pas accepter cet échange, car vous n\'êtes pas le destinataire.');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        exchange.status = 'Accepted';
+        exchange.updated_at = new Date();
+        await exchange.save({ transaction });
+
+        const exchangeObjects = await ExchangeObject.findAll({ where: { exchange_id: exchangeId }, transaction });
+
+        if (!exchangeObjects || exchangeObjects.length === 0) {
+            const error = new Error('Objets non trouvés');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const proposerUserId = exchange.proposer_user_id;
+        const receiverUserId = exchange.receiver_user_id;
+
+        const proposerObjects = exchangeObjects.filter(eo => eo.user_id === proposerUserId);
+        const receiverObjects = exchangeObjects.filter(eo => eo.user_id === receiverUserId);
+
+        const proposerObjectIds = proposerObjects.map(eo => eo.object_id);
+        await Object.update(
+            { user_id: receiverUserId },
+            { where: { id: proposerObjectIds }, transaction }
+        );
+
+        const receiverObjectIds = receiverObjects.map(eo => eo.object_id);
+        await Object.update(
+            { user_id: proposerUserId },
+            { where: { id: receiverObjectIds }, transaction }
+        );
+
+        await transaction.commit();
+        return exchange;
+    } catch (error) {
+        await transaction.rollback();
+        console.error('Error accepting exchange:', error);
+        throw error;
+    }
+};
+
 // Historique des Exchange d'un USER
-exports.getHistoriqueExchange = async (userId,status, page, limit) => {
+exports.getHistoriqueExchange = async (userId, status, page, limit) => {
     try {
         const offset = (page - 1) * limit;
         const conditions = {
@@ -100,8 +172,8 @@ exports.getHistoriqueExchange = async (userId,status, page, limit) => {
             created_at: exchange.created_at,
             updated_at: exchange.updated_at
         }));
-        
-        const totalPages = Math.ceil(count / limit);    
+
+        const totalPages = Math.ceil(count / limit);
 
         return {
             totalItems: count,
@@ -116,20 +188,20 @@ exports.getHistoriqueExchange = async (userId,status, page, limit) => {
 
 exports.rejectExchange = async (exchangeId, note, userId) => {
     try {
-      const exchange = await Exchange.findByPk(exchangeId);
-      if (!exchange) {
-        return null;
-      }
-      if(exchange.receiver_user_id != userId){
-        return 1;
-      }
-      exchange.status = 'Refused';
-      exchange.note = note;
-      exchange.date = new Date();
-      await exchange.save();
-      return exchange;
+        const exchange = await Exchange.findByPk(exchangeId);
+        if (!exchange) {
+            return null;
+        }
+        if (exchange.receiver_user_id != userId) {
+            return 1;
+        }
+        exchange.status = 'Refused';
+        exchange.note = note;
+        exchange.date = new Date();
+        await exchange.save();
+        return exchange;
     } catch (error) {
-      console.error('Error updating exchange status:', error);
-      throw error;
+        console.error('Error updating exchange status:', error);
+        throw error;
     }
 }
