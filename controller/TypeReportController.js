@@ -1,5 +1,21 @@
 const TypeReportRepository = require('../service/TypeReportRepository');
 
+exports.deleteReportType = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedReportType = await TypeReportRepository.deleteReportType(id);
+    res.status(200).json({
+      message: 'ReportType deleted successfully',
+      data: deletedReportType
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
+  }
+};
+
 exports.getAllTypeReports = async (req, res) => {
   try {
     let { page, limit, q } = req.query;

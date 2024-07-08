@@ -4,6 +4,16 @@ const Object = require('../models/Object');
 const Sequelize = require('sequelize');
 
 class CategoryRepository {
+
+  async deleteCategory(categoryId) {
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      throw new Error('Category not found');
+    }
+    await category.destroy();
+    return category;
+  }
+
   async getCategories(name, page, limit) {
     const offset = (page - 1) * limit;
     const where = name ? { name: { [Op.iLike]: `%${name}%` } } : {};

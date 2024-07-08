@@ -1,6 +1,15 @@
 const { Op } = require('sequelize');
 const TypeReport = require("../models/TypeReport");
 
+exports.deleteReportType = async (reportTypeId) => {
+  const reportType = await TypeReport.findByPk(reportTypeId);
+  if (!reportType) {
+    throw new Error('ReportType not found');
+  }
+  await reportType.destroy();
+  return reportType;
+}
+
 exports.findAll = async (q, page, limit) => {
   const offset = (page - 1) * limit;
   const where = q ? { name: { [Op.iLike]: `%${q}%` } } : {};
