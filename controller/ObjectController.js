@@ -36,11 +36,20 @@ exports.createObject = async (req, res) => {
 
 exports.getObjects = async (req, res) => {
   try {
-    let { page, limit, q, userID } = req.query;
+    let { page, limit, name, description, user_name, category_name, created_at_start, created_at_end } = req.query;
     page = page || "1";
     limit = limit || "50";
 
-    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(q, parseInt(page), parseInt(limit), userID);
+    const filters = {
+      name,
+      description,
+      user_name,
+      category_name,
+      created_at_start,
+      created_at_end
+    };
+
+    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, parseInt(page), parseInt(limit));
 
     res.status(200).json({
       data: {
