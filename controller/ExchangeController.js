@@ -1,5 +1,21 @@
 const ExchangeRepository = require('../service/ExchangeRepository');
 
+exports.getOpenExchanges = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const exchanges = await ExchangeRepository.getOpenExchanges(userId);
+
+        res.status(200).json({
+            data: exchanges,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "ERROR",
+            error: error.message,
+        });
+    }
+};
+
 exports.getCount = async (req, res) => {
     try {
         const { status } = req.query;
@@ -45,7 +61,7 @@ exports.proposerExchange = async (req, res) => {
 
 exports.acceptExchange = async (req, res) => {
     const { exchangeId } = req.params;
-    const userId  = req.user.id;
+    const userId = req.user.id;
 
     try {
         const exchange = await ExchangeRepository.acceptExchange(exchangeId, userId);

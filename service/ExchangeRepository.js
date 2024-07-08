@@ -5,6 +5,21 @@ const Object = require("../models/Object");
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
+exports.getOpenExchanges = async (userId) => {
+    const where = {
+        status: 'Proposed',
+        [Op.or]: [
+            { proposer_user_id: userId },
+            { receiver_user_id: userId }
+        ]
+    };
+
+    return await Exchange.findAll({
+        where,
+        order: [['created_at', 'DESC']]
+    });
+}
+
 exports.getCountByStatus = async (status) => {
     try {
         const count = await Exchange.count({
