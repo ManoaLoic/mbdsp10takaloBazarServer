@@ -43,6 +43,24 @@ exports.proposerExchange = async (req, res) => {
     }
 };
 
+exports.acceptExchange = async (req, res) => {
+    const { exchangeId } = req.params;
+    const userId  = req.user.id;
+
+    try {
+        const exchange = await ExchangeRepository.acceptExchange(exchangeId, userId);
+        res.status(200).json({
+            message: 'Échange accepté avec succès',
+            exchange: exchange
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            message: 'ERROR',
+            error: error.message
+        });
+    }
+};
+
 exports.getHistoriqueExchange = async (req, res) => {
     try {
         const userId = req.params.userId;
