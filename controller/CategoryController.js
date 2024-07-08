@@ -1,5 +1,21 @@
 const categoryRepository = require('../service/CategoryRepository');
 
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedCategory = await categoryRepository.deleteCategory(id);
+    res.status(200).json({
+      message: 'Category deleted successfully',
+      data: deletedCategory
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
+  }
+};
+
 exports.getCategories = async (req, res) => {
   try {
     let { page, limit, q } = req.query;

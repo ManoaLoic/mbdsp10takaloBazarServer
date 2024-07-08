@@ -9,9 +9,11 @@ const { authenticate, authorize } = require('./middleware/auth');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const categoriesRouter = require('./routes/categories');
 const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
 const exchangesRoutes = require('./routes/exchanges');
+const typeReportsRoutes = require('./routes/typeReports');
 const typeReportRoutes = require('./routes/typeReport');
 const objectsRoute = require('./routes/objects');
 const objectRoute = require('./routes/object');
@@ -44,10 +46,12 @@ app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
 
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
-app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
+app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
+app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/exchanges', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangesRoutes);
-app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
+app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportsRoutes);
+app.use(prefix + '/typeReport', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
 app.use(prefix + '/object', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportsRoute);
