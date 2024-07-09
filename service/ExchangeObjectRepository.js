@@ -75,3 +75,16 @@ exports.getListeExchangeObjects = async (idExchange, page, limit) => {
         throw error;
     }
 };
+
+exports.deleteExchangeObject = async (id) => {
+    try {
+        const exchangeObject = await ExchangeObject.findByPk(id);
+        if (!exchangeObject) {
+            throw new Error('ExchangeObject not found');
+        }
+        await exchangeObject.destroy();
+        return exchangeObject;
+    } catch (error) {
+        throw error;
+    }
+};
