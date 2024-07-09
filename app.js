@@ -9,6 +9,7 @@ const { authenticate, authorize } = require('./middleware/auth');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const userRouter = require('./routes/user');
 const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
 const typeReportRoutes = require('./routes/typeReport');
@@ -42,6 +43,7 @@ app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
 
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
+app.use(prefix + '/user', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), userRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
