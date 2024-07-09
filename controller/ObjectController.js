@@ -123,3 +123,20 @@ exports.updateObject = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Delete an Object
+exports.deleteObject = async (req, res) => {
+  try {
+      const { objectId } = req.params;
+      const deletedObject = await ObjectRepository.deleteObject(objectId);
+      res.status(200).json({
+          message: 'Object deleted successfully',
+          data: deletedObject
+      });
+  } catch (error) {
+      res.status(500).json({
+          message: "ERROR",
+          error: error.message,
+      });
+  }
+};

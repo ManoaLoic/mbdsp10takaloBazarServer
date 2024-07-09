@@ -53,3 +53,20 @@ exports.addExchangeObject = async (req, res) => {
         return res.status(400).json({ error: error.message });
     }
 }
+
+
+exports.deleteExchangeObject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedExchangeObject = await ExchangeObjectRepository.deleteExchangeObject(id);
+        res.status(200).json({
+            message: 'ExchangeObject deleted successfully',
+            data: deletedExchangeObject
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "ERROR",
+            error: error.message,
+        });
+    }
+};

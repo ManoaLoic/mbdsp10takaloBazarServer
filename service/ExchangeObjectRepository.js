@@ -128,3 +128,15 @@ exports.addExchangeObject = async(exchangeId, objectId, userId) => {
 
     return exchangeObject;
   }
+exports.deleteExchangeObject = async (id) => {
+    try {
+        const exchangeObject = await ExchangeObject.findByPk(id);
+        if (!exchangeObject) {
+            throw new Error('ExchangeObject not found');
+        }
+        await exchangeObject.destroy();
+        return exchangeObject;
+    } catch (error) {
+        throw error;
+    }
+};
