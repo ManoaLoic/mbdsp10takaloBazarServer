@@ -63,7 +63,6 @@ exports.userUpdate = async (req, res) => {
   const { id } = req.params;
   const { username, email, password, confirmPassword, first_name, last_name, profile_picture, gender } = req.body;
 
-  // Vérifier que le mot de passe et la confirmation correspondent
   if (password && password !== confirmPassword) {
     return res.status(400).json({ error: 'Les mots de passe ne correspondent pas' });
   }

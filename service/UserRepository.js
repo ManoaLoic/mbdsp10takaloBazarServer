@@ -102,6 +102,7 @@ exports.getUserProfile = async (userId) => {
 };
 
 exports.userUpdate = async (id, updates) => {
+    // 
     try {
       const user = await User.findByPk(id);
       if (!user) {
