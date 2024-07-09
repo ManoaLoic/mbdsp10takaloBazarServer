@@ -4,6 +4,21 @@ const User = require('../models/User');
 const Category = require('../models/Category');
 
 class ObjectRepository {
+
+  async deleteObject(objectId) {
+    try {
+      const object = await ObjectModel.findByPk(objectId);
+      if (!object) {
+        throw new Error('Object not found');
+      }
+      await object.destroy();
+      return object;
+    } catch (error) {
+      console.error("Error deleting object:", error);
+      throw error;
+    }
+  }
+  
   async getObjects(filters, page = 1, limit = 50) {
     const offset = (page - 1) * limit;
     const where = {};
@@ -111,6 +126,8 @@ class ObjectRepository {
       throw error;
     }
   }
+
+ 
 }
 
 module.exports = new ObjectRepository();
