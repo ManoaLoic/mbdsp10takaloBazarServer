@@ -234,6 +234,7 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
         }
         exchange.status = 'Refused';
         exchange.note = note;
+        exchange.updated_at = new Date();
         exchange.date = new Date();
         await exchange.save();
         return exchange;

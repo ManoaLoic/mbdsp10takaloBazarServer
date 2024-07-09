@@ -70,7 +70,7 @@ exports.removeObject = async (req, res) => {
   const { objectId } = req.params;
 
   try {
-    const updatedObject = await ObjectRepository.removeObject(objectId);
+    const updatedObject = await ObjectRepository.removeObject(objectId,req.user.id);
     if (!updatedObject) {
       return res.status(404).json({ error: "Objet non trouvé" });
     }

@@ -1,7 +1,7 @@
 const Report = require("../models/Report");
 const Object = require("../models/Object");
 const User = require("../models/User");
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 exports.getReportById = async (id) => {
     try {
@@ -33,57 +33,31 @@ exports.getReportedObjects = async (page, limit) => {
         const offset = (page - 1) * limit;
 
         const { count, rows } = await Report.findAndCountAll({
-            limit: limit,
-            offset: offset,
-            order: [['created_at', 'DESC']],
+            attributes: [
+                'object_id',
+                [Sequelize.fn('COUNT', Sequelize.col('Report.id')), 'reportCount'],
+                [Sequelize.col('Object.name'), 'object_name']
+            ],
             include: [
                 {
                     model: Object,
-                    attributes: ['id', 'name', 'description', 'image'],
-                    include: [
-                        { model: User, attributes: ['id', 'username', 'first_name', 'last_name'] }
-                    ]
-                },
-                {
-                    model: User,
-                    attributes: ['id', 'username', 'first_name', 'last_name']
+                    attributes: ['id', 'name'],
+                    required: true
                 }
-            ]
+            ],
+            group: ['Report.object_id', 'Object.id'],
+            order: [[Sequelize.literal('COUNT(object_id)'), 'DESC']],
+            limit: limit,
+            offset: offset
         });
 
-        const totalPages = Math.ceil(count / limit);
-
-        const formattedReports = rows.map(report => ({
-            id: report.id,
-            reason: report.reason,
-            object_id: report.object_id,
-            object: {
-                id: report.Object.id,
-                name: report.Object.name,
-                description: report.Object.description,
-                image: report.Object.image,
-                user: {
-                    id: report.Object.User.id,
-                    username: report.Object.User.username,
-                    first_name: report.Object.User.first_name,
-                    last_name: report.Object.User.last_name
-                }
-            },
-            reporter_user: {
-                id: report.User.id,
-                username: report.User.username,
-                first_name: report.User.first_name,
-                last_name: report.User.last_name
-            },
-            created_at: report.created_at,
-            updated_at: report.updated_at
-        }));
+        const totalPages = Math.ceil(count.length / limit);
 
         return {
-            totalItems: count,
+            totalItems: count.length,
             totalPages: totalPages,
             currentPage: page,
-            reports: formattedReports
+            reports: rows
         };
     } catch (error) {
         throw error;

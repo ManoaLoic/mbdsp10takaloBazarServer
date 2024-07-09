@@ -50,6 +50,10 @@ const Exchange = sequelize.define('Exchange', {
         allowNull: false,
         defaultValue: DataTypes.NOW,
     },
+    date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     tableName: 'Exchange',
     timestamps: false,
