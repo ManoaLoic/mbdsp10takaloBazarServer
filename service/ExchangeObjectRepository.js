@@ -75,3 +75,56 @@ exports.getListeExchangeObjects = async (idExchange, page, limit) => {
         throw error;
     }
 };
+
+exports.addExchangeObject = async(exchangeId, objectId, userId) => {
+
+    const existingExchangeObject = await ExchangeObject.findOne({
+        where: {
+            exchange_id: exchangeId,
+            object_id: objectId
+        }
+    });
+  
+    if (existingExchangeObject) {
+        throw new Error('L\'objet est déjà associé à cet échange');
+    }
+
+    const user = await User.findOne({
+        where: { id: userId }
+      });
+  
+    if (!user) {
+    throw new Error('Utilisateur non trouvé');
+    }
+    const exchange = await Exchange.findOne({
+      where: { id: exchangeId }
+    });
+
+    if (!exchange) {
+      throw new Error('Échange non trouvé');
+    }
+
+    if (exchange.proposer_user_id !== userId && exchange.receiver_user_id !== userId) {
+      throw new Error('Utilisateur non autorisé pour cet échange car l\'user ne correspond pas ni au proposeur ni au receveur');
+    }
+
+    const object = await Object.findOne({
+        where: { id: objectId }
+      });
+  
+    if (!object) {
+    throw new Error('Objet non trouvé');
+    }
+
+    if (object.user_id !== userId) {
+        throw new Error('L\'utilisateur n\'est pas le propriétaire de l\'objet');
+    }
+
+    const exchangeObject = await ExchangeObject.create({
+      exchange_id: exchangeId,
+      object_id: objectId,
+      user_id: userId
+    });
+
+    return exchangeObject;
+  }
