@@ -134,3 +134,13 @@ exports.rejectExchange = async (req, res) => {
         return res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 }
+
+exports.getExchangesBetweenDates = async (req,res) => {
+    const { date1, date2, status } = req.query;
+    try {
+      const exchanges = await ExchangeRepository.getExchangesBetweenDates(date1, date2, status);
+      return res.status(200).json({ exchanges });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+}

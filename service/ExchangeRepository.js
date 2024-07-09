@@ -2,7 +2,7 @@ const Exchange = require("../models/Exchange");
 const ExchangeObject = require("../models/ExchangeObject");
 const User = require("../models/User");
 const Object = require("../models/Object");
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
 
 exports.getTopUsersByExchanges = async (limit = 10) => {
@@ -239,6 +239,80 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
         return exchange;
     } catch (error) {
         console.error('Error updating exchange status:', error);
+        throw error;
+    }
+}
+
+// Nombre d'échange entre 2 dates
+exports.getExchangesBetweenDates = async (date1,date2,status) => {
+    try {
+        let dateCondition = 'created_at';
+        let whereConditions = {};
+        if (status) {
+            whereConditions.status = status;
+            if(status==="proposed"){
+                whereConditions.date = null;
+            }else{
+                dateCondition='date';
+            }
+        }
+        if (!date1 && !date2) {
+          const result = await Exchange.findAll({
+            attributes: [
+              [Sequelize.fn('date_part', 'year', Sequelize.col(dateCondition)), 'year'],
+              [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+            ],
+            where: whereConditions,
+            group: ['year']
+          });
+          return result;
+        }
+        if (!date1 && date2) {
+          const oldestExchange = await Exchange.findOne({
+            order: [[dateCondition, 'ASC']]
+          });
+          date1 = oldestExchange ? oldestExchange.date : new Date();
+        }
+        if (date1 && !date2) {
+          date2 = new Date();
+        }
+        date1 = new Date(date1);
+        date2 = new Date(date2);
+        const intervalDays = (date2 - date1) / (1000 * 60 * 60 * 24);
+        whereConditions.date = {
+          [Op.between]: [date1, date2]
+        };
+        let result;
+        if (intervalDays <= 30) {
+          result = await Exchange.findAll({
+            attributes: [
+              [Sequelize.fn('date_trunc', 'day', Sequelize.col(dateCondition)), 'day'],
+              [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+            ],
+            where: whereConditions,
+            group: ['day']
+          });
+        } else if (intervalDays <= 365) {
+          result = await Exchange.findAll({
+            attributes: [
+              [Sequelize.fn('date_trunc', 'month', Sequelize.col(dateCondition)), 'month'],
+              [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+            ],
+            where: whereConditions,
+            group: ['month']
+          });
+        } else {
+          result = await Exchange.findAll({
+            attributes: [
+              [Sequelize.fn('date_trunc', 'year', Sequelize.col(dateCondition)), 'year'],
+              [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+            ],
+            where: whereConditions,
+            group: ['year']
+          });
+        }
+        return result;
+    } catch (error) {
         throw error;
     }
 }
