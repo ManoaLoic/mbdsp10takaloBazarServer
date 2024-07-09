@@ -44,7 +44,7 @@ const prefix = "/api";
 app.use('/', indexRouter);
 app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
-
+// 
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
 app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);

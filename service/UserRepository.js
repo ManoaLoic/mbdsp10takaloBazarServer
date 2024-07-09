@@ -100,3 +100,24 @@ exports.getUserProfile = async (userId) => {
         throw err;
     }
 };
+
+exports.userUpdate = async (id, updates) => {
+    // 
+    try {
+      const user = await User.findByPk(id);
+      if (!user) {
+        return null;
+      }
+
+      if (updates.password) {
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(updates.password, salt);
+      }
+
+      await user.update(updates);
+      return user;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
