@@ -25,6 +25,7 @@ const defineAssociations = require('./models/associations');
 const exchangeObjectsRoute = require('./routes/exchangeObjects');
 const exchangeObjectRoute = require('./routes/exchangeObject');
 const registerRoute = require('./routes/register');
+const dashboardRoute = require('./routes/dashboard');
 
 const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
 var app = express();
@@ -45,6 +46,7 @@ const prefix = "/api";
 app.use('/', indexRouter);
 app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
+app.use(prefix + '/dashboard', authenticate, authorize([ADMIN_PROFILE]), dashboardRoute);
 app.use(prefix + '/user', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), userRouter);
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
