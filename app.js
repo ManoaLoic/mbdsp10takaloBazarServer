@@ -9,6 +9,7 @@ const { authenticate, authorize } = require('./middleware/auth');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const userRouter = require('./routes/user');
 const categoriesRouter = require('./routes/categories');
 const categoryRouter = require('./routes/category');
 const exchangeRoutes = require('./routes/exchange');
@@ -44,7 +45,7 @@ const prefix = "/api";
 app.use('/', indexRouter);
 app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
-// 
+app.use(prefix + '/user', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), userRouter);
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
 app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
