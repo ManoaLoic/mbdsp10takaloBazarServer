@@ -82,6 +82,25 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.addUser = async (req, res) => {
+  const { username, password, email, first_name, last_name, gender, role } = req.body;
+
+  if (!username || !password || !email || !first_name || !last_name || !gender || !role) {
+    return res.status(400).json({ error: 'Tous les champs sont obligatoires pour ajouter un utilisateur' });
+  }
+
+  try {
+    const result = await UserRepository.addUser({ username, password, email, first_name, last_name, gender, role });
+    return res.status(201).json(result);
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ error: 'Nom d\'utilisateur ou Email déjà existant' });
+    }
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+};
+
 exports.userUpdate = async (req, res) => {
   const { id } = req.params;
   const { username, email, password, confirmPassword, first_name, last_name, profile_picture, gender } = req.body;
