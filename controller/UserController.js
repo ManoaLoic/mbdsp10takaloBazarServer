@@ -113,3 +113,19 @@ exports.userUpdate = async (req, res) => {
     return res.status(500).json({ error: 'Erreur interne du serveur::'+error.message });
   }
 }
+
+exports.getAllUsers = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || '';
+  const gender = req.query.gender || '';
+  const type = req.query.type || '';
+
+  try {
+      const result = await UserRepository.getAllUsers({ page, limit, search, gender, type });
+      res.status(200).json(result);
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+}
