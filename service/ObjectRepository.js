@@ -19,23 +19,21 @@ class ObjectRepository {
     }
   }
 
-  async getObjects(filters, userType, page = 1, limit = 50) {
+  async getObjects(filters, userType, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
     const offset = (page - 1) * limit;
     const where = {};
 
-    // Apply filters based on user type
     if (userType !== 'ADMIN') {
       where.status = 'Available';
       where.deleted_At = null;
     }
 
-    // Apply additional filters
     if (filters.name) {
-      where.name = { [Op.like]: `%${filters.name}%` };
+      where.name = { [Op.like]: `%{filters.name}%` };
     }
 
     if (filters.description) {
-      where.description = { [Op.like]: `%${filters.description}%` };
+      where.description = { [Op.like]: `%{filters.description}%` };
     }
 
     if (filters.created_at_start || filters.created_at_end) {
@@ -78,13 +76,14 @@ class ObjectRepository {
       {
         model: User,
         as: 'user',
-        where: filters.user_name ? { username: { [Op.like]: `%${filters.user_name}%` } } : undefined,
-        required: false
+        where: filters.user_name ? { username: { [Op.like]: `%{filters.user_name}%` } } : undefined,
+        required: false,
+        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
       },
       {
         model: Category,
         as: 'category',
-        where: filters.category_name ? { name: { [Op.like]: `%${filters.category_name}%` } } : undefined,
+        where: filters.category_name ? { name: { [Op.like]: `%{filters.category_name}%` } } : undefined,
         required: false
       }
     ];
@@ -94,6 +93,7 @@ class ObjectRepository {
       include,
       offset,
       limit,
+      order: [[orderBy, orderDirection.toUpperCase()]],
     });
 
     const totalPages = Math.ceil(count / limit);
@@ -104,6 +104,7 @@ class ObjectRepository {
       currentPage: page
     };
   }
+
 
 
 
