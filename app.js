@@ -46,19 +46,20 @@ const prefix = "/api";
 app.use('/', indexRouter);
 app.use(prefix + '/auth', authRoutes);
 app.use(prefix + '/register', registerRoute);
+
 app.use(prefix + '/dashboard', authenticate, authorize([ADMIN_PROFILE]), dashboardRoute);
 app.use(prefix + '/user', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), userRouter);
-app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE]), usersRouter);
+app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), usersRouter);
 app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
-app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoryRouter);
+app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/exchanges', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangesRoutes);
 app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportsRoutes);
-app.use(prefix + '/typeReport', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportRoutes);
+app.use(prefix + '/typeReport', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
 app.use(prefix + '/object', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportsRoute);
-app.use(prefix + '/report', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportRoute);
+app.use(prefix + '/report', authenticate, authorize([ADMIN_PROFILE]), reportRoute);
 app.use(prefix + '/exchangeObjects',authenticate,authorize([ADMIN_PROFILE, STANDARD_PROFILE]),exchangeObjectsRoute);
 app.use(prefix + '/exchangeObject',authenticate,authorize([ADMIN_PROFILE, STANDARD_PROFILE]),exchangeObjectRoute);
 
