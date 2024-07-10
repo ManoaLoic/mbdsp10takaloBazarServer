@@ -126,8 +126,6 @@ class ObjectRepository {
       throw error;
     }
   }
-
- 
 }
 
 module.exports = new ObjectRepository();

@@ -4,15 +4,23 @@ const mime = require('mime-types');
 
 exports.createObject = async (req, res) => {
   try {
-    const { name, description, category_id, image_file } = req.body;
+    const { name, description, category_id, image_file, user_id } = req.body;
 
     if (!image_file) {
-      return res.status(400).send('Image file is required.');
+      return res.status(400).send('Le fichier image est requis.');
     }
 
     const fileExtension = mime.extension(image_file.split(';')[0].split(':')[1]);
     const fileName = `images/${Date.now()}_${name.replaceAll(' ', '_')}.${fileExtension}`;
     const imageUrl = await uploadFile(image_file.split('base64,')[1], fileName);
+
+    // Vérifier le rôle de l'utilisateur
+    const isAdmin = req.user.type === process.env.ADMIN_PROFILE;
+    const finalUserId = isAdmin ? user_id : req.user.id;
+
+    if (!finalUserId) {
+      return res.status(400).send('L\'ID utilisateur est requis.');
+    }
 
     const newObject = {
       name,
@@ -20,7 +28,7 @@ exports.createObject = async (req, res) => {
       image: imageUrl,
       status: 'Available',
       date: new Date(),
-      user_id: req.user.id,
+      user_id: finalUserId,
       category_id,
       created_at: new Date(),
       updated_at: new Date(),
@@ -30,7 +38,7 @@ exports.createObject = async (req, res) => {
     res.status(201).json(object);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send('Erreur interne du serveur');
   }
 };
 
