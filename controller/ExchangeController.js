@@ -51,23 +51,17 @@ exports.getCount = async (req, res) => {
 
 exports.proposerExchange = async (req, res) => {
   try {
+    const prpUserId = req.user.id;
     const {
-      prpUserId,
       rcvUserId,
       rcvObjectId,
-      prpObjectId,
-      note,
-      appointmentDate,
-      meetingPlace,
+      prpObjectId
     } = req.body;
     const exchange = await ExchangeRepository.proposerExchange(
       prpUserId,
       rcvUserId,
       rcvObjectId,
-      prpObjectId,
-      note,
-      new Date(appointmentDate),
-      meetingPlace
+      prpObjectId
     );
 
     res.status(201).json({

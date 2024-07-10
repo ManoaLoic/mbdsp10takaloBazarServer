@@ -57,20 +57,22 @@ exports.getCountByStatus = async (status) => {
 };
 
 // Proposer Exchange
-exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId, note, appointmentDate, meetingPlace) => {
+exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId) => {
     try {
         const proposerUser = await User.findByPk(prpUserID);
         const receiverUser = await User.findByPk(rcvUserId);
         const receiverObject = await Object.findAll({
             where: {
                 id: rcvObjectId,
-                user_id: rcvUserId
+                user_id: rcvUserId,
+                status : 'Available'
             }
         });
         const proposerObjects = await Object.findAll({
             where: {
                 id: prpObjectId,
-                user_id: prpUserID
+                user_id: prpUserID,
+                status : 'Available'
             }
         });
 
@@ -82,9 +84,6 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
             proposer_user_id: prpUserID,
             receiver_user_id: rcvUserId,
             status: 'Proposed',
-            note: note,
-            appointment_date: appointmentDate,
-            meeting_place: meetingPlace,
             created_at: new Date(),
             updated_at: new Date()
         });
