@@ -121,3 +121,42 @@ exports.userUpdate = async (id, updates) => {
       throw error;
     }
   }
+
+exports.getAllUsers = async ({ page = 1, limit = 10, search = '', gender = '', type = '' }) => {
+    const offset = (page - 1) * limit;
+    const where = {};
+
+    if (search) {
+        where[Sequelize.Op.or] = [
+            { username: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { email: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { first_name: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { last_name: { [Sequelize.Op.iLike]: `%${search}%` } }
+        ];
+    }
+
+    if (gender) {
+        where.gender = gender;
+    }
+
+    if (type) {
+        where.type = type;
+    }
+
+
+    const { count, rows } = await User.findAndCountAll({
+        where,
+        attributes: { exclude: ['password'] },
+        limit,
+        offset
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+        totalItems: count,
+        totalPages: totalPages,
+        currentPage: page,
+        users: rows
+    };
+}
