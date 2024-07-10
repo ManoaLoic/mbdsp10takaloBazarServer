@@ -36,15 +36,15 @@ exports.createObject = async (req, res) => {
 
 exports.getObjects = async (req, res) => {
   try {
-    let { page, limit, name, description, user_name, category_name, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end, order_by, order_direction } = req.query;
+    let { page, limit, name, description, user_id, category_id, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end, order_by, order_direction } = req.query;
     page = page || "1";
     limit = limit || "50";
 
     const filters = {
       name,
       description,
-      user_name,
-      category_name,
+      user_id,
+      category_id,
       created_at_start,
       created_at_end,
       status,
@@ -54,12 +54,12 @@ exports.getObjects = async (req, res) => {
       updated_at_end
     };
 
-    const { type } = req.user;
+    const { type, id } = req.user;
 
     order_by = order_by || 'created_at';
     order_direction = order_direction || 'DESC';
 
-    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, type, parseInt(page), parseInt(limit), order_by, order_direction);
+    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, id, type, parseInt(page), parseInt(limit), order_by, order_direction);
 
     res.status(200).json({
       data: {
@@ -75,9 +75,6 @@ exports.getObjects = async (req, res) => {
     });
   }
 };
-
-
-
 
 exports.removeObject = async (req, res) => {
   const { objectId } = req.params;

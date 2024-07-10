@@ -19,58 +19,17 @@ class ObjectRepository {
     }
   }
 
-  async getObjects(filters, userType, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
+  async getMyObjects(filters, userType, userId, connectedUserId, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
     const offset = (page - 1) * limit;
     const where = {};
 
-    if (userType !== 'ADMIN') {
+    where.deleted_At = null;
+    where.user_id = userId;
+    if (userId != connectedUserId) {
       where.status = 'Available';
-      where.deleted_At = null;
     }
 
-    if (filters.name) {
-      where.name = { [Op.like]: `%{filters.name}%` };
-    }
-
-    if (filters.description) {
-      where.description = { [Op.like]: `%{filters.description}%` };
-    }
-
-    if (filters.created_at_start || filters.created_at_end) {
-      where.created_at = {};
-      if (filters.created_at_start) {
-        where.created_at[Op.gte] = filters.created_at_start;
-      }
-      if (filters.created_at_end) {
-        where.created_at[Op.lte] = filters.created_at_end;
-      }
-    }
-
-    if (userType === 'ADMIN') {
-      if (filters.status) {
-        where.status = filters.status;
-      }
-
-      if (filters.deleted_at_start || filters.deleted_at_end) {
-        where.deleted_At = {};
-        if (filters.deleted_at_start) {
-          where.deleted_At[Op.gte] = filters.deleted_at_start;
-        }
-        if (filters.deleted_at_end) {
-          where.deleted_At[Op.lte] = filters.deleted_at_end;
-        }
-      }
-
-      if (filters.updated_at_start || filters.updated_at_end) {
-        where.updated_at = {};
-        if (filters.updated_at_start) {
-          where.updated_at[Op.gte] = filters.updated_at_start;
-        }
-        if (filters.updated_at_end) {
-          where.updated_at[Op.lte] = filters.updated_at_end;
-        }
-      }
-    }
+    this.applyfilter(filters, where, userType);
 
     const include = [
       {
@@ -105,8 +64,102 @@ class ObjectRepository {
     };
   }
 
+  async getObjects(filters, connectedUserId, userType, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
+    const offset = (page - 1) * limit;
+    const where = {};
 
+    if (userType !== 'ADMIN') {
+      where.deleted_At = null;
+      where.user_id = { [Op.ne]: connectedUserId };
+      where.status = 'Available';
+    }
 
+    this.applyfilter(filters, where, userType);
+
+    const include = [
+      {
+        model: User,
+        as: 'user',
+        required: false,
+        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
+      },
+      {
+        model: Category,
+        as: 'category',
+        required: false
+      }
+    ];
+
+    const { rows: objects, count } = await ObjectModel.findAndCountAll({
+      where,
+      include,
+      offset,
+      limit,
+      order: [[orderBy, orderDirection.toUpperCase()]],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+      objects,
+      totalPages,
+      currentPage: page
+    };
+  }
+
+  applyfilter(filters, where, userType) {
+    if (filters.user_id) {
+      where.user_id = filters.user_id;
+    }
+
+    if (filters.category_id) {
+      where.category_id = filters.category_id;
+    }
+
+    if (filters.name) {
+      where.name = { [Op.like]: `%${filters.name}%` };
+    }
+
+    if (filters.description) {
+      where.description = { [Op.like]: `%${filters.description}%` };
+    }
+
+    if (filters.created_at_start || filters.created_at_end) {
+      where.created_at = {};
+      if (filters.created_at_start) {
+        where.created_at[Op.gte] = filters.created_at_start;
+      }
+      if (filters.created_at_end) {
+        where.created_at[Op.lte] = filters.created_at_end;
+      }
+    }
+
+    if (filters.updated_at_start || filters.updated_at_end) {
+      where.updated_at = {};
+      if (filters.updated_at_start) {
+        where.updated_at[Op.gte] = filters.updated_at_start;
+      }
+      if (filters.updated_at_end) {
+        where.updated_at[Op.lte] = filters.updated_at_end;
+      }
+    }
+
+    if (userType === 'ADMIN') {
+      if (filters.status) {
+        where.status = filters.status;
+      }
+
+      if (filters.deleted_at_start || filters.deleted_at_end) {
+        where.deleted_At = {};
+        if (filters.deleted_at_start) {
+          where.deleted_At[Op.gte] = filters.deleted_at_start;
+        }
+        if (filters.deleted_at_end) {
+          where.deleted_At[Op.lte] = filters.deleted_at_end;
+        }
+      }
+    }
+  }
 
   async removeObject(objectId, userId) {
     try {
