@@ -1,6 +1,34 @@
 const ObjectRepository = require("../service/ObjectRepository");
+const ReportRepository = require("../service/ReportRepository");
 const { uploadFile } = require('../service/fileService');
 const mime = require('mime-types');
+
+exports.getReports = async (req, res) => {
+  const { objectId } = req.params;
+  const { page = 1, limit = 10, ...filters } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const object = await ObjectRepository.getObject(objectId);
+    if (!object) {
+      return res.status(404).json({ message: 'Object not found' });
+    }
+
+    const { rows: reports, count } = await ReportRepository.findReportsByObjectId(objectId, filters, offset, limit);
+
+    const totalPages = Math.ceil(count / limit);
+
+    return res.json({
+      object,
+      reports,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 exports.createObject = async (req, res) => {
   try {

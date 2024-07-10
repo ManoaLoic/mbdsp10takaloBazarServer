@@ -3,6 +3,36 @@ const Object = require("../models/Object");
 const User = require("../models/User");
 const { Op, Sequelize } = require('sequelize');
 
+exports.findReportsByObjectId = async (objectId, filters, offset, limit) => {
+    const where = { object_id: objectId };
+
+    if (filters.reason) {
+        where.reason = { [Op.like]: `%${filters.reason}%` };
+    }
+
+    if (filters.created_at_start || filters.created_at_end) {
+        where.created_at = {};
+        if (filters.created_at_start) {
+            where.created_at[Op.gte] = filters.created_at_start;
+        }
+        if (filters.created_at_end) {
+            where.created_at[Op.lte] = filters.created_at_end;
+        }
+    }
+
+    return Report.findAndCountAll({
+        where,
+        include: [
+            {
+                model: User,
+                attributes: ['id', 'username', 'email'],
+            },
+        ],
+        offset,
+        limit,
+    });
+}
+
 exports.getReportById = async (id) => {
     try {
         const report = await Report.findByPk(id, {
