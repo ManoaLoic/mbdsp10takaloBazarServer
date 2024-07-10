@@ -1,5 +1,51 @@
 const UserRepository = require("../service/UserRepository");
+const ObjectRepository = require("../service/ObjectRepository");
 require('dotenv').config();
+
+exports.getUserObjects = async (req, res) => {
+  try {
+    let { page, limit, name, description, user_id, category_id, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end, order_by, order_direction } = req.query;
+    const { userId } = req.params;
+    const connectedUserId = req.user.id;
+    const userType = req.user.type;
+
+    page = page || "1";
+    limit = limit || "50";
+
+    const filters = {
+      name,
+      description,
+      user_id,
+      category_id,
+      created_at_start,
+      created_at_end,
+      status,
+      deleted_at_start,
+      deleted_at_end,
+      updated_at_start,
+      updated_at_end
+    };
+
+    order_by = order_by || 'created_at';
+    order_direction = order_direction || 'DESC';
+
+    const { objects, totalPages, currentPage } = await ObjectRepository.getMyObjects(filters, userType, userId, connectedUserId, parseInt(page), parseInt(limit), order_by, order_direction);
+
+    res.status(200).json({
+      data: {
+        objects,
+        totalPages,
+        currentPage,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -129,7 +175,7 @@ exports.userUpdate = async (req, res) => {
     return res.status(200).json({ message: 'Profil mis à jour avec succès', user: updatedUser });
   } catch (error) {
     console.error('Erreur lors de la mise à jour du profil:', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur::'+error.message });
+    return res.status(500).json({ error: 'Erreur interne du serveur::' + error.message });
   }
 }
 
@@ -141,10 +187,10 @@ exports.getAllUsers = async (req, res) => {
   const type = req.query.type || '';
 
   try {
-      const result = await UserRepository.getAllUsers({ page, limit, search, gender, type });
-      res.status(200).json(result);
+    const result = await UserRepository.getAllUsers({ page, limit, search, gender, type });
+    res.status(200).json(result);
   } catch (error) {
-      console.error('Error fetching users:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
