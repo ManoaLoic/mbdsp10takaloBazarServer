@@ -10,9 +10,20 @@ class CategoryRepository {
     if (!category) {
       throw new Error('Category not found');
     }
-    await category.destroy();
+
+    // Vérifiez les associations avant la suppression
+    try {
+      await category.destroy();
+    } catch (error) {
+      if (error.message.includes('violates foreign key constraint')) {
+        throw new Error('Category cannot be deleted because it is associated with other records');
+      } else {
+        throw error;
+      }
+    }
     return category;
   }
+
 
   async getCategories(name, page, limit) {
     const offset = (page - 1) * limit;

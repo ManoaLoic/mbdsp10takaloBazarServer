@@ -5,14 +5,28 @@ exports.deleteCategory = async (req, res) => {
     const { id } = req.params;
     const deletedCategory = await categoryRepository.deleteCategory(id);
     res.status(200).json({
-      message: 'Category deleted successfully',
+      message: 'Catégorie supprimée avec succès',
       data: deletedCategory
     });
   } catch (error) {
-    res.status(500).json({
-      message: "ERROR",
-      error: error.message,
-    });
+    if (error.message === 'Category not found') {
+      return res.status(404).json({
+        message: "La catégorie n'a pas été trouvée. Veuillez vérifier l'ID fourni."
+      });
+    } else if (error.message === 'Category cannot be deleted because it is associated with other records') {
+      return res.status(400).json({
+        message: "La catégorie ne peut pas être supprimée car elle est associée à d'autres enregistrements."
+      });
+    } else if (error.message.includes('violates foreign key constraint')) {
+      return res.status(400).json({
+        message: "La catégorie ne peut pas être supprimée car elle est associée à d'autres objets."
+      });
+    } else {
+      return res.status(500).json({
+        message: "Erreur interne du serveur",
+        error: error.message,
+      });
+    }
   }
 };
 
