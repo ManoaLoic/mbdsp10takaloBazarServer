@@ -105,13 +105,32 @@ class ObjectRepository {
   }
 
   // Modifier Object
-  async updateObject(objectId, data) {
+  async updateObject(objectId, data,userID) {
     try {
+      const user = await User.findByPk(userID);
       const object = await ObjectModel.findByPk(objectId);
-      if (!object) {
-        throw new Error('Pas de résultat!');
+      if(!object){
+        const error = new Error('Objet non trouvé');
+        error.statusCode = 404;
+        throw error;
       }
-      await object.update(data);
+      if(!user){
+        const error = new Error('Utilisateur non trouvé.Veuillez vous reconnectez!');
+        error.statusCode = 404;
+        throw error;
+      }
+      if(user.type==='USER'){
+        if(object.user_id!==user.id){
+          const error = new Error('Vous ne pouvez pas modifier cet Objet car ce n\'est pas à vous!');
+          error.statusCode = 403;
+          throw error;
+        }else{
+          await object.update(data);
+        }
+      }
+      if(user.type==='ADMIN'){
+        await object.update(data);
+      }
       return object;
     } catch (error) {
       throw error;

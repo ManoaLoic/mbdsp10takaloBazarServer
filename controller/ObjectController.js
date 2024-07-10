@@ -113,8 +113,26 @@ exports.getObject = async (req, res) => {
 exports.updateObject = async (req, res) => {
   try {
     const objectId = req.params.id;
-    const data = req.body;
-    const updatedObject = await ObjectRepository.updateObject(objectId, data);
+    const { name, description, category_id, image_file } = req.body;
+    const userID = req.user.id;
+
+    if (!image_file) {
+      return res.status(400).send('Image file is required.');
+    }
+
+    const fileExtension = mime.extension(image_file.split(';')[0].split(':')[1]);
+    const fileName = `images/${Date.now()}_${name.replaceAll(' ', '_')}.${fileExtension}`;
+    const imageUrl = await uploadFile(image_file.split('base64,')[1], fileName);
+
+    const data = {
+      name,
+      description,
+      image: imageUrl,
+      category_id
+    };
+    
+    const updatedObject = await ObjectRepository.updateObject(objectId, data,userID);
+
     res.status(200).json({
       message: "SUCCESS",
       data: updatedObject
