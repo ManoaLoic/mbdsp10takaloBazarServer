@@ -18,11 +18,18 @@ class ObjectRepository {
       throw error;
     }
   }
-  
-  async getObjects(filters, page = 1, limit = 50) {
+
+  async getObjects(filters, userType, page = 1, limit = 50) {
     const offset = (page - 1) * limit;
     const where = {};
 
+    // Apply filters based on user type
+    if (userType !== 'ADMIN') {
+      where.status = 'Available';
+      where.deleted_At = null;
+    }
+
+    // Apply additional filters
     if (filters.name) {
       where.name = { [Op.like]: `%${filters.name}%` };
     }
@@ -38,6 +45,32 @@ class ObjectRepository {
       }
       if (filters.created_at_end) {
         where.created_at[Op.lte] = filters.created_at_end;
+      }
+    }
+
+    if (userType === 'ADMIN') {
+      if (filters.status) {
+        where.status = filters.status;
+      }
+
+      if (filters.deleted_at_start || filters.deleted_at_end) {
+        where.deleted_At = {};
+        if (filters.deleted_at_start) {
+          where.deleted_At[Op.gte] = filters.deleted_at_start;
+        }
+        if (filters.deleted_at_end) {
+          where.deleted_At[Op.lte] = filters.deleted_at_end;
+        }
+      }
+
+      if (filters.updated_at_start || filters.updated_at_end) {
+        where.updated_at = {};
+        if (filters.updated_at_start) {
+          where.updated_at[Op.gte] = filters.updated_at_start;
+        }
+        if (filters.updated_at_end) {
+          where.updated_at[Op.lte] = filters.updated_at_end;
+        }
       }
     }
 
@@ -72,6 +105,8 @@ class ObjectRepository {
     };
   }
 
+
+
   async removeObject(objectId, userId) {
     try {
       const object = await ObjectModel.findByPk(objectId);
@@ -105,30 +140,30 @@ class ObjectRepository {
   }
 
   // Modifier Object
-  async updateObject(objectId, data,userID) {
+  async updateObject(objectId, data, userID) {
     try {
       const user = await User.findByPk(userID);
       const object = await ObjectModel.findByPk(objectId);
-      if(!object){
+      if (!object) {
         const error = new Error('Objet non trouvé');
         error.statusCode = 404;
         throw error;
       }
-      if(!user){
+      if (!user) {
         const error = new Error('Utilisateur non trouvé.Veuillez vous reconnectez!');
         error.statusCode = 404;
         throw error;
       }
-      if(user.type==='USER'){
-        if(object.user_id!==user.id){
+      if (user.type === 'USER') {
+        if (object.user_id !== user.id) {
           const error = new Error('Vous ne pouvez pas modifier cet Objet car ce n\'est pas à vous!');
           error.statusCode = 403;
           throw error;
-        }else{
+        } else {
           await object.update(data);
         }
       }
-      if(user.type==='ADMIN'){
+      if (user.type === 'ADMIN') {
         await object.update(data);
       }
       return object;
@@ -146,7 +181,7 @@ class ObjectRepository {
     }
   }
 
- 
+
 }
 
 module.exports = new ObjectRepository();

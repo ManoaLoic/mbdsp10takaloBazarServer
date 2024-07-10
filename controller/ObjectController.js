@@ -36,7 +36,7 @@ exports.createObject = async (req, res) => {
 
 exports.getObjects = async (req, res) => {
   try {
-    let { page, limit, name, description, user_name, category_name, created_at_start, created_at_end } = req.query;
+    let { page, limit, name, description, user_name, category_name, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end } = req.query;
     page = page || "1";
     limit = limit || "50";
 
@@ -46,10 +46,17 @@ exports.getObjects = async (req, res) => {
       user_name,
       category_name,
       created_at_start,
-      created_at_end
+      created_at_end,
+      status,
+      deleted_at_start,
+      deleted_at_end,
+      updated_at_start,
+      updated_at_end
     };
 
-    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, parseInt(page), parseInt(limit));
+    const { type } = req.user;
+
+    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, type, parseInt(page), parseInt(limit));
 
     res.status(200).json({
       data: {
@@ -66,11 +73,13 @@ exports.getObjects = async (req, res) => {
   }
 };
 
+
+
 exports.removeObject = async (req, res) => {
   const { objectId } = req.params;
 
   try {
-    const updatedObject = await ObjectRepository.removeObject(objectId,req.user.id);
+    const updatedObject = await ObjectRepository.removeObject(objectId, req.user.id);
     if (!updatedObject) {
       return res.status(404).json({ error: "Objet non trouvé" });
     }
@@ -130,8 +139,8 @@ exports.updateObject = async (req, res) => {
       image: imageUrl,
       category_id
     };
-    
-    const updatedObject = await ObjectRepository.updateObject(objectId, data,userID);
+
+    const updatedObject = await ObjectRepository.updateObject(objectId, data, userID);
 
     res.status(200).json({
       message: "SUCCESS",
@@ -145,16 +154,16 @@ exports.updateObject = async (req, res) => {
 // Delete an Object
 exports.deleteObject = async (req, res) => {
   try {
-      const { objectId } = req.params;
-      const deletedObject = await ObjectRepository.deleteObject(objectId);
-      res.status(200).json({
-          message: 'Object deleted successfully',
-          data: deletedObject
-      });
+    const { objectId } = req.params;
+    const deletedObject = await ObjectRepository.deleteObject(objectId);
+    res.status(200).json({
+      message: 'Object deleted successfully',
+      data: deletedObject
+    });
   } catch (error) {
-      res.status(500).json({
-          message: "ERROR",
-          error: error.message,
-      });
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
   }
 };
