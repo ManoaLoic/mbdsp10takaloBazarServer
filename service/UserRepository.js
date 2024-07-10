@@ -61,6 +61,35 @@ exports.register = async (userData) => {
     }
 };
 
+exports.addUser = async (userData) => {
+    try {
+        const { username, password, email, first_name, last_name, gender, role } = userData;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({
+            username,
+            password: hashedPassword,
+            email,
+            first_name,
+            last_name,
+            gender,
+            type: role,  // Utiliser le rôle fourni
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+
+        const token = getTokenUser(newUser);
+
+        return {
+            token,
+            username: newUser.username,
+        };
+    } catch (error) {
+        throw error;
+    }
+};
+
 function getTokenUser(user) {
     return jwt.sign({
         email: user.email,
