@@ -132,6 +132,7 @@ exports.acceptExchange = async (exchangeId, userId) => {
 
         exchange.status = 'Accepted';
         exchange.updated_at = new Date();
+        exchange.date = new Date();
         await exchange.save({ transaction });
 
         const exchangeObjects = await ExchangeObject.findAll({ where: { exchange_id: exchangeId }, transaction });
