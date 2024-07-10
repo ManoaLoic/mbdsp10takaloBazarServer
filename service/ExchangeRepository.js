@@ -5,6 +5,92 @@ const Object = require("../models/Object");
 const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
 
+exports.findExchanges = async (filters, offset, limit, orderBy = 'created_at', orderDirection = 'DESC') => {
+    orderBy = orderBy || 'created_at';
+    orderDirection = orderDirection || 'DESC';
+
+    const where = {};
+
+    if (filters.proposer_user_id) {
+        where.proposer_user_id = filters.proposer_user_id;
+    }
+
+    if (filters.receiver_user_id) {
+        where.receiver_user_id = filters.receiver_user_id;
+    }
+
+    if (filters.status) {
+        where.status = filters.status;
+    }
+
+    if (filters.note) {
+        where.note = { [Op.like]: `%${filters.note}%` };
+    }
+
+    if (filters.appointment_date_start || filters.appointment_date_end) {
+        where.appointment_date = {};
+        if (filters.appointment_date_start) {
+            where.appointment_date[Op.gte] = filters.appointment_date_start;
+        }
+        if (filters.appointment_date_end) {
+            where.appointment_date[Op.lte] = filters.appointment_date_end;
+        }
+    }
+
+    if (filters.meeting_place) {
+        where.meeting_place = { [Op.like]: `%${filters.meeting_place}%` };
+    }
+
+    if (filters.created_at_start || filters.created_at_end) {
+        where.created_at = {};
+        if (filters.created_at_start) {
+            where.created_at[Op.gte] = filters.created_at_start;
+        }
+        if (filters.created_at_end) {
+            where.created_at[Op.lte] = filters.created_at_end;
+        }
+    }
+
+    if (filters.updated_at_start || filters.updated_at_end) {
+        where.updated_at = {};
+        if (filters.updated_at_start) {
+            where.updated_at[Op.gte] = filters.updated_at_start;
+        }
+        if (filters.updated_at_end) {
+            where.updated_at[Op.lte] = filters.updated_at_end;
+        }
+    }
+
+    if (filters.date_start || filters.date_end) {
+        where.date = {};
+        if (filters.date_start) {
+            where.date[Op.gte] = filters.date_start;
+        }
+        if (filters.date_end) {
+            where.date[Op.lte] = filters.date_end;
+        }
+    }
+
+    return Exchange.findAndCountAll({
+        where,
+        include: [
+            {
+                model: User,
+                as: 'proposer',
+                attributes: ['id', 'username', 'email'],
+            },
+            {
+                model: User,
+                as: 'receiver',
+                attributes: ['id', 'username', 'email'],
+            }
+        ],
+        offset,
+        limit,
+        order: [[orderBy, orderDirection]],
+    });
+}
+
 exports.getTopUsersByExchanges = async (limit = 10) => {
     const query = `
         SELECT user_id, username, COUNT(*) AS exchange_count
@@ -65,14 +151,14 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
             where: {
                 id: rcvObjectId,
                 user_id: rcvUserId,
-                status : 'Available'
+                status: 'Available'
             }
         });
         const proposerObjects = await Object.findAll({
             where: {
                 id: prpObjectId,
                 user_id: prpUserID,
-                status : 'Available'
+                status: 'Available'
             }
         });
 
@@ -246,83 +332,82 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
 // Nombre d'échange entre 2 dates
 exports.getExchangesBetweenDates = async (date1, date2, status) => {
     try {
-      let dateCondition = 'created_at';
-      let whereConditions = {};
-  
-      if (status) {
-        whereConditions.status = status;
-        if (status === "proposed") {
-          whereConditions.date = null;
-        } else {
-          dateCondition = 'date';
+        let dateCondition = 'created_at';
+        let whereConditions = {};
+
+        if (status) {
+            whereConditions.status = status;
+            if (status === "proposed") {
+                whereConditions.date = null;
+            } else {
+                dateCondition = 'date';
+            }
         }
-      }
-  
-      if (!date1 && !date2) {
-        const result = await Exchange.findAll({
-          attributes: [
-            [Sequelize.fn('date_part', 'year', Sequelize.col(dateCondition)), 'year'],
-            [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
-          ],
-          where: whereConditions,
-          group: ['year']
-        });
+
+        if (!date1 && !date2) {
+            const result = await Exchange.findAll({
+                attributes: [
+                    [Sequelize.fn('date_part', 'year', Sequelize.col(dateCondition)), 'year'],
+                    [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+                ],
+                where: whereConditions,
+                group: ['year']
+            });
+            return result;
+        }
+
+        if (!date1 && date2) {
+            const oldestExchange = await Exchange.findOne({
+                order: [[dateCondition, 'ASC']]
+            });
+            date1 = oldestExchange ? oldestExchange[dateCondition] : new Date();
+        }
+
+        if (date1 && !date2) {
+            date2 = new Date();
+        }
+
+        date1 = new Date(date1);
+        date2 = new Date(date2);
+        const intervalDays = (date2 - date1) / (1000 * 60 * 60 * 24);
+
+        whereConditions[dateCondition] = {
+            [Op.between]: [date1, date2]
+        };
+
+        let result;
+
+        if (intervalDays <= 30) {
+            result = await Exchange.findAll({
+                attributes: [
+                    [Sequelize.literal(`date_trunc('day', "${dateCondition}")::date`), 'day'],
+                    [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+                ],
+                where: whereConditions,
+                group: ['day']
+            });
+        } else if (intervalDays <= 365) {
+            result = await Exchange.findAll({
+                attributes: [
+                    [Sequelize.literal(`date_trunc('month', "${dateCondition}")::date`), 'month'],
+                    [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+                ],
+                where: whereConditions,
+                group: ['month']
+            });
+        } else {
+            result = await Exchange.findAll({
+                attributes: [
+                    [Sequelize.literal(`date_trunc('year', "${dateCondition}")::date`), 'year'],
+                    [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
+                ],
+                where: whereConditions,
+                group: ['year']
+            });
+        }
+
         return result;
-      }
-  
-      if (!date1 && date2) {
-        const oldestExchange = await Exchange.findOne({
-          order: [[dateCondition, 'ASC']]
-        });
-        date1 = oldestExchange ? oldestExchange[dateCondition] : new Date();
-      }
-  
-      if (date1 && !date2) {
-        date2 = new Date();
-      }
-  
-      date1 = new Date(date1);
-      date2 = new Date(date2);
-      const intervalDays = (date2 - date1) / (1000 * 60 * 60 * 24);
-  
-      whereConditions[dateCondition] = {
-        [Op.between]: [date1, date2]
-      };
-  
-      let result;
-  
-      if (intervalDays <= 30) {
-        result = await Exchange.findAll({
-          attributes: [
-            [Sequelize.literal(`date_trunc('day', "${dateCondition}")::date`), 'day'],
-            [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
-          ],
-          where: whereConditions,
-          group: ['day']
-        });
-      } else if (intervalDays <= 365) {
-        result = await Exchange.findAll({
-          attributes: [
-            [Sequelize.literal(`date_trunc('month', "${dateCondition}")::date`), 'month'],
-            [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
-          ],
-          where: whereConditions,
-          group: ['month']
-        });
-      } else {
-        result = await Exchange.findAll({
-          attributes: [
-            [Sequelize.literal(`date_trunc('year', "${dateCondition}")::date`), 'year'],
-            [Sequelize.fn('COUNT', Sequelize.col('id')), 'exchange_count']
-          ],
-          where: whereConditions,
-          group: ['year']
-        });
-      }
-  
-      return result;
     } catch (error) {
-      throw error;
+        throw error;
     }
-  };
-  
+};

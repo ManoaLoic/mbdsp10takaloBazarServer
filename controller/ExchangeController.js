@@ -1,5 +1,28 @@
 const ExchangeRepository = require("../service/ExchangeRepository");
 
+exports.getExchanges = async (req, res) => {
+  let { page, limit, orderBy, orderDirection, ...filters } = req.query;
+  page = page || "1";
+  limit = limit || "50";
+  const offset = (page - 1) * limit;
+
+
+  try {
+    const { rows: exchanges, count } = await ExchangeRepository.findExchanges(filters, offset, parseInt(limit), orderBy, orderDirection);
+
+    const totalPages = Math.ceil(count / limit);
+
+    return res.json({
+      exchanges,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error fetching exchanges:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 exports.getTopUsersByExchanges = async (req, res) => {
   try {
     const topUsers = await ExchangeRepository.getTopUsersByExchanges();
