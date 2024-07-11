@@ -1,5 +1,51 @@
 const UserRepository = require("../service/UserRepository");
+const ObjectRepository = require("../service/ObjectRepository");
 require('dotenv').config();
+
+exports.getUserObjects = async (req, res) => {
+  try {
+    let { page, limit, name, description, user_id, category_id, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end, order_by, order_direction } = req.query;
+    const { userId } = req.params;
+    const connectedUserId = req.user.id;
+    const userType = req.user.type;
+
+    page = page || "1";
+    limit = limit || "50";
+
+    const filters = {
+      name,
+      description,
+      user_id,
+      category_id,
+      created_at_start,
+      created_at_end,
+      status,
+      deleted_at_start,
+      deleted_at_end,
+      updated_at_start,
+      updated_at_end
+    };
+
+    order_by = order_by || 'created_at';
+    order_direction = order_direction || 'DESC';
+
+    const { objects, totalPages, currentPage } = await ObjectRepository.getMyObjects(filters, userType, userId, connectedUserId, parseInt(page), parseInt(limit), order_by, order_direction);
+
+    res.status(200).json({
+      data: {
+        objects,
+        totalPages,
+        currentPage,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -82,6 +128,25 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.addUser = async (req, res) => {
+  const { username, password, email, first_name, last_name, gender, role } = req.body;
+
+  if (!username || !password || !email || !first_name || !last_name || !gender || !role) {
+    return res.status(400).json({ error: 'Tous les champs sont obligatoires pour ajouter un utilisateur' });
+  }
+
+  try {
+    const result = await UserRepository.addUser({ username, password, email, first_name, last_name, gender, role });
+    return res.status(201).json(result);
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ error: 'Nom d\'utilisateur ou Email déjà existant' });
+    }
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+};
+
 exports.userUpdate = async (req, res) => {
   const { id } = req.params;
   const { username, email, password, confirmPassword, first_name, last_name, profile_picture, gender } = req.body;
@@ -110,6 +175,22 @@ exports.userUpdate = async (req, res) => {
     return res.status(200).json({ message: 'Profil mis à jour avec succès', user: updatedUser });
   } catch (error) {
     console.error('Erreur lors de la mise à jour du profil:', error);
-    return res.status(500).json({ error: 'Erreur interne du serveur::'+error.message });
+    return res.status(500).json({ error: 'Erreur interne du serveur::' + error.message });
+  }
+}
+
+exports.getAllUsers = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || '';
+  const gender = req.query.gender || '';
+  const type = req.query.type || '';
+
+  try {
+    const result = await UserRepository.getAllUsers({ page, limit, search, gender, type });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }

@@ -51,6 +51,10 @@ const Object = sequelize.define('Object', {
             key: 'id',
         },
     },
+    deleted_At: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     tableName: 'Object',
     timestamps: false,

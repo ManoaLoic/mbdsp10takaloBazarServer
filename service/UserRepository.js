@@ -61,6 +61,35 @@ exports.register = async (userData) => {
     }
 };
 
+exports.addUser = async (userData) => {
+    try {
+        const { username, password, email, first_name, last_name, gender, role } = userData;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({
+            username,
+            password: hashedPassword,
+            email,
+            first_name,
+            last_name,
+            gender,
+            type: role,  // Utiliser le rôle fourni
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+
+        const token = getTokenUser(newUser);
+
+        return {
+            token,
+            username: newUser.username,
+        };
+    } catch (error) {
+        throw error;
+    }
+};
+
 function getTokenUser(user) {
     return jwt.sign({
         email: user.email,
@@ -121,3 +150,42 @@ exports.userUpdate = async (id, updates) => {
       throw error;
     }
   }
+
+exports.getAllUsers = async ({ page = 1, limit = 10, search = '', gender = '', type = '' }) => {
+    const offset = (page - 1) * limit;
+    const where = {};
+
+    if (search) {
+        where[Sequelize.Op.or] = [
+            { username: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { email: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { first_name: { [Sequelize.Op.iLike]: `%${search}%` } },
+            { last_name: { [Sequelize.Op.iLike]: `%${search}%` } }
+        ];
+    }
+
+    if (gender) {
+        where.gender = gender;
+    }
+
+    if (type) {
+        where.type = type;
+    }
+
+
+    const { count, rows } = await User.findAndCountAll({
+        where,
+        attributes: { exclude: ['password'] },
+        limit,
+        offset
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+        totalItems: count,
+        totalPages: totalPages,
+        currentPage: page,
+        users: rows
+    };
+}

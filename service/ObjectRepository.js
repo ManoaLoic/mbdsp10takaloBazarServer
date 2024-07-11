@@ -18,10 +18,103 @@ class ObjectRepository {
       throw error;
     }
   }
-  
-  async getObjects(filters, page = 1, limit = 50) {
+
+  async getMyObjects(filters, userType, userId, connectedUserId, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
     const offset = (page - 1) * limit;
     const where = {};
+
+    where.deleted_At = null;
+    where.user_id = userId;
+    if (userId != connectedUserId) {
+      where.status = 'Available';
+    }
+
+    this.applyfilter(filters, where, userType);
+
+    const include = [
+      {
+        model: User,
+        as: 'user',
+        where: filters.user_name ? { username: { [Op.like]: `%{filters.user_name}%` } } : undefined,
+        required: false,
+        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
+      },
+      {
+        model: Category,
+        as: 'category',
+        where: filters.category_name ? { name: { [Op.like]: `%{filters.category_name}%` } } : undefined,
+        required: false
+      }
+    ];
+
+    const { rows: objects, count } = await ObjectModel.findAndCountAll({
+      where,
+      include,
+      offset,
+      limit,
+      order: [[orderBy, orderDirection.toUpperCase()]],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+      objects,
+      totalPages,
+      currentPage: page
+    };
+  }
+
+  async getObjects(filters, connectedUserId, userType, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
+    const offset = (page - 1) * limit;
+    const where = {};
+
+    if (userType !== 'ADMIN') {
+      where.deleted_At = null;
+      where.user_id = { [Op.ne]: connectedUserId };
+      where.status = 'Available';
+    }
+
+    this.applyfilter(filters, where, userType);
+
+    const include = [
+      {
+        model: User,
+        as: 'user',
+        required: false,
+        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
+      },
+      {
+        model: Category,
+        as: 'category',
+        required: false
+      }
+    ];
+
+    const { rows: objects, count } = await ObjectModel.findAndCountAll({
+      where,
+      include,
+      offset,
+      limit,
+      order: [[orderBy, orderDirection.toUpperCase()]],
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    return {
+      objects,
+      totalPages,
+      currentPage: page
+    };
+  }
+
+  applyfilter(filters, where, userType) {
+    if (filters.user_id) {
+      where.user_id = filters.user_id;
+    }
+
+    if (filters.category_id) {
+      where.category_id = filters.category_id;
+    }
 
     if (filters.name) {
       where.name = { [Op.like]: `%${filters.name}%` };
@@ -41,35 +134,31 @@ class ObjectRepository {
       }
     }
 
-    const include = [
-      {
-        model: User,
-        as: 'user',
-        where: filters.user_name ? { username: { [Op.like]: `%${filters.user_name}%` } } : undefined,
-        required: false
-      },
-      {
-        model: Category,
-        as: 'category',
-        where: filters.category_name ? { name: { [Op.like]: `%${filters.category_name}%` } } : undefined,
-        required: false
+    if (filters.updated_at_start || filters.updated_at_end) {
+      where.updated_at = {};
+      if (filters.updated_at_start) {
+        where.updated_at[Op.gte] = filters.updated_at_start;
       }
-    ];
+      if (filters.updated_at_end) {
+        where.updated_at[Op.lte] = filters.updated_at_end;
+      }
+    }
 
-    const { rows: objects, count } = await ObjectModel.findAndCountAll({
-      where,
-      include,
-      offset,
-      limit,
-    });
+    if (userType === 'ADMIN') {
+      if (filters.status) {
+        where.status = filters.status;
+      }
 
-    const totalPages = Math.ceil(count / limit);
-
-    return {
-      objects,
-      totalPages,
-      currentPage: page
-    };
+      if (filters.deleted_at_start || filters.deleted_at_end) {
+        where.deleted_At = {};
+        if (filters.deleted_at_start) {
+          where.deleted_At[Op.gte] = filters.deleted_at_start;
+        }
+        if (filters.deleted_at_end) {
+          where.deleted_At[Op.lte] = filters.deleted_at_end;
+        }
+      }
+    }
   }
 
   async removeObject(objectId, userId) {
@@ -105,13 +194,32 @@ class ObjectRepository {
   }
 
   // Modifier Object
-  async updateObject(objectId, data) {
+  async updateObject(objectId, data, userID) {
     try {
+      const user = await User.findByPk(userID);
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
-        throw new Error('Pas de résultat!');
+        const error = new Error('Objet non trouvé');
+        error.statusCode = 404;
+        throw error;
       }
-      await object.update(data);
+      if (!user) {
+        const error = new Error('Utilisateur non trouvé.Veuillez vous reconnectez!');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (user.type === 'USER') {
+        if (object.user_id !== user.id) {
+          const error = new Error('Vous ne pouvez pas modifier cet Objet car ce n\'est pas à vous!');
+          error.statusCode = 403;
+          throw error;
+        } else {
+          await object.update(data);
+        }
+      }
+      if (user.type === 'ADMIN') {
+        await object.update(data);
+      }
       return object;
     } catch (error) {
       throw error;
@@ -126,6 +234,8 @@ class ObjectRepository {
       throw error;
     }
   }
+
+
 }
 
 module.exports = new ObjectRepository();

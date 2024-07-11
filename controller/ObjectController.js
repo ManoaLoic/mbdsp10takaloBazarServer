@@ -1,6 +1,34 @@
 const ObjectRepository = require("../service/ObjectRepository");
+const ReportRepository = require("../service/ReportRepository");
 const { uploadFile } = require('../service/fileService');
 const mime = require('mime-types');
+
+exports.getReports = async (req, res) => {
+  const { objectId } = req.params;
+  const { page = 1, limit = 10, ...filters } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const object = await ObjectRepository.getObject(objectId);
+    if (!object) {
+      return res.status(404).json({ message: 'Object not found' });
+    }
+
+    const { rows: reports, count } = await ReportRepository.findReportsByObjectId(objectId, filters, offset, limit);
+
+    const totalPages = Math.ceil(count / limit);
+
+    return res.json({
+      object,
+      reports,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 exports.createObject = async (req, res) => {
   try {
@@ -44,20 +72,30 @@ exports.createObject = async (req, res) => {
 
 exports.getObjects = async (req, res) => {
   try {
-    let { page, limit, name, description, user_name, category_name, created_at_start, created_at_end } = req.query;
+    let { page, limit, name, description, user_id, category_id, created_at_start, created_at_end, status, deleted_at_start, deleted_at_end, updated_at_start, updated_at_end, order_by, order_direction } = req.query;
     page = page || "1";
     limit = limit || "50";
 
     const filters = {
       name,
       description,
-      user_name,
-      category_name,
+      user_id,
+      category_id,
       created_at_start,
-      created_at_end
+      created_at_end,
+      status,
+      deleted_at_start,
+      deleted_at_end,
+      updated_at_start,
+      updated_at_end
     };
 
-    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, parseInt(page), parseInt(limit));
+    const { type, id } = req.user;
+
+    order_by = order_by || 'created_at';
+    order_direction = order_direction || 'DESC';
+
+    const { objects, totalPages, currentPage } = await ObjectRepository.getObjects(filters, id, type, parseInt(page), parseInt(limit), order_by, order_direction);
 
     res.status(200).json({
       data: {
@@ -78,7 +116,7 @@ exports.removeObject = async (req, res) => {
   const { objectId } = req.params;
 
   try {
-    const updatedObject = await ObjectRepository.removeObject(objectId,req.user.id);
+    const updatedObject = await ObjectRepository.removeObject(objectId, req.user.id);
     if (!updatedObject) {
       return res.status(404).json({ error: "Objet non trouvé" });
     }
@@ -121,8 +159,26 @@ exports.getObject = async (req, res) => {
 exports.updateObject = async (req, res) => {
   try {
     const objectId = req.params.id;
-    const data = req.body;
-    const updatedObject = await ObjectRepository.updateObject(objectId, data);
+    const { name, description, category_id, image_file } = req.body;
+    const userID = req.user.id;
+
+    if (!image_file) {
+      return res.status(400).send('Image file is required.');
+    }
+
+    const fileExtension = mime.extension(image_file.split(';')[0].split(':')[1]);
+    const fileName = `images/${Date.now()}_${name.replaceAll(' ', '_')}.${fileExtension}`;
+    const imageUrl = await uploadFile(image_file.split('base64,')[1], fileName);
+
+    const data = {
+      name,
+      description,
+      image: imageUrl,
+      category_id
+    };
+
+    const updatedObject = await ObjectRepository.updateObject(objectId, data, userID);
+
     res.status(200).json({
       message: "SUCCESS",
       data: updatedObject
@@ -135,16 +191,16 @@ exports.updateObject = async (req, res) => {
 // Delete an Object
 exports.deleteObject = async (req, res) => {
   try {
-      const { objectId } = req.params;
-      const deletedObject = await ObjectRepository.deleteObject(objectId);
-      res.status(200).json({
-          message: 'Object deleted successfully',
-          data: deletedObject
-      });
+    const { objectId } = req.params;
+    const deletedObject = await ObjectRepository.deleteObject(objectId);
+    res.status(200).json({
+      message: 'Object deleted successfully',
+      data: deletedObject
+    });
   } catch (error) {
-      res.status(500).json({
-          message: "ERROR",
-          error: error.message,
-      });
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
   }
 };
