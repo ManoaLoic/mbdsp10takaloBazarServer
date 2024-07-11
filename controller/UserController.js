@@ -70,9 +70,9 @@ exports.loginUser = async (req, res) => {
     return res.status(200).json({ message: 'Connexion réussie', user });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
-    return res
-      .status(500)
-      .json({ error: "Erreur interne du serveur: " + error.message });
+    return res.status(error.statusCode || 500).json({
+        error: error.message,
+      });
   }
 };
 

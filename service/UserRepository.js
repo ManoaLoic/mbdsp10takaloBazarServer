@@ -17,6 +17,11 @@ exports.login = async (username, pwd, type) => {
             }
         });
         if (user) {
+            if (user.status === 'Deleted') {
+                const error = new Error('Votre compte a été désactivé. Vous ne pouvez pas vous connecter.');
+                error.statusCode = 403;
+                throw error;
+            }
             const isPasswordValid = await bcrypt.compare(pwd, user.password);
             if (isPasswordValid) {
                 const token = getTokenUser(user);
