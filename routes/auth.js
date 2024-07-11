@@ -10,18 +10,14 @@ router.post('/admin/login', userController.loginAdmin);
 router.post('/logout', authenticate, async (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.decode(token);
-    console.log("TOOO : ",jwt.decode(token));
     if (!decodedToken || !decodedToken.jti) {
-        console.error('Invalid token:', decodedToken);
         return res.status(400).json({ message: 'Invalid token' });
     }
     try {
-        console.log('Revoking token with jti:', decodedToken.jti);
         await RevokedToken.create({ jti: decodedToken.jti });
-        res.status(200).json({ message: 'Logged out successfully' });
+        res.status(200).json({ message: 'Déconnxion Réussie!' });
     } catch (err) {
-        console.error('Error revoking token:', err);
-        res.status(500).json({ message: 'Error during logout' });
+        res.status(500).json({ message: 'Erreur lors de la Déconnexion!' });
     }
 });
 
