@@ -11,7 +11,8 @@ class ObjectRepository {
       if (!object) {
         throw new Error('Object not found');
       }
-      await object.destroy();
+      object.deleted_At = new Date();
+      await object.save(); 
       return object;
     } catch (error) {
       console.error("Error deleting object:", error);

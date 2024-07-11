@@ -192,7 +192,7 @@ exports.updateObject = async (req, res) => {
 exports.deleteObject = async (req, res) => {
   try {
     const { objectId } = req.params;
-    const deletedObject = await ObjectRepository.deleteObject(objectId);
+    const deletedObject = await ObjectRepository.deleteObject(objectId, req.user.id);
     res.status(200).json({
       message: 'Object deleted successfully',
       data: deletedObject
