@@ -4,6 +4,8 @@ const Sequelize = require('sequelize');
 const { Op } = Sequelize;
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
+const { uploadFile } = require('../service/fileService');
+const mime = require('mime-types');
 
 exports.login = async (username, pwd, type) => {
     try {
@@ -149,9 +151,14 @@ exports.userUpdate = async (id, updates) => {
         const salt = await bcrypt.genSalt(10);
         updates.password = await bcrypt.hash(updates.password, salt);
       }
+      
+    if(updates.profile_picture){
+        const fileExtension = mime.extension(updates.profile_picture.split(';')[0].split(':')[1]);
+        const fileName = `images/user/${Date.now()}_${(user.first_name+" "+user.last_name).replaceAll(' ', '_')}.${fileExtension}`;
+        updates.profile_picture = await uploadFile(updates.profile_picture.split('base64,')[1], fileName);
+    }
 
-      await user.update(updates);
-      return user;
+      return await user.update(updates);
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;
