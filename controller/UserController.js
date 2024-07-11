@@ -100,7 +100,7 @@ exports.loginAdmin = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const userProfile = await UserRepository.getUserProfile(req.params.userId);
+    const userProfile = await UserRepository.getUserProfile(req.user.id);
     res.status(200).json({
       message: "SUCCESS",
       user: userProfile
@@ -194,3 +194,15 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+exports.userRemove = async (req, res) => {
+  try {
+    const userProfile = await UserRepository.userRemove(req.params.id);
+    res.status(200).json({
+      message: "SUCCESS",
+      user: userProfile
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

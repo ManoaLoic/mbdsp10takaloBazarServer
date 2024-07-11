@@ -49,6 +49,15 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: DataTypes.NOW,
     },
+    status : {
+        type : DataTypes.STRING,
+        allowNull: false,
+    },
+    deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW,
+    }
 }, {
     tableName: 'User',
     timestamps: false,

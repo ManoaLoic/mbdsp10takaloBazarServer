@@ -108,7 +108,7 @@ exports.getUserProfile = async (userId) => {
     try {
         console.log("ato");
         const user = await User.findByPk(userId, {
-            attributes: ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture', 'gender', 'created_at']
+            attributes: ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture', 'gender', 'created_at','status']
         });
 
         if (!user) {
@@ -124,6 +124,7 @@ exports.getUserProfile = async (userId) => {
             profile_picture: user.profile_picture,
             gender: user.gender,
             created_at: user.created_at,
+            status : user.status
         };
     } catch (err) {
         throw err;
@@ -189,3 +190,22 @@ exports.getAllUsers = async ({ page = 1, limit = 10, search = '', gender = '', t
         users: rows
     };
 }
+
+// Suppression User
+exports.userRemove = async (id) => {
+    // 
+    try {
+      const user = await User.findByPk(id);
+      if (!user) {
+        return null;
+      }
+      await user.update({
+        status : 'Deleted',
+        deleted_at : new Date()
+      });
+      return user;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
