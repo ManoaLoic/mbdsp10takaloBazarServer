@@ -98,6 +98,7 @@ function getTokenUser(user) {
         last_name: user.last_name,
         username: user.username,
         type: user.type,
+        jti: user.id + '-' + new Date().getTime(),
     }, process.env.SECRET_KEY, {
         expiresIn: process.env.EXPIRATION_TOKEN
     });
