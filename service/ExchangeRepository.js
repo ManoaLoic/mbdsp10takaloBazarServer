@@ -124,6 +124,18 @@ exports.getOpenExchanges = async (userId) => {
 
     return await Exchange.findAll({
         where,
+        include: [
+            {
+                model: User,
+                as: 'proposer',
+                attributes: ['id', 'username', 'email'],
+            },
+            {
+                model: User,
+                as: 'receiver',
+                attributes: ['id', 'username', 'email'],
+            }
+        ],
         order: [['created_at', 'DESC']]
     });
 }

@@ -43,6 +43,23 @@ exports.register = async (userData) => {
     try {
         const { username, password, email, first_name, last_name, gender } = userData;
 
+        // Vérifier si l'username ou l'email existe déjà
+        const existingUser = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
+
+        if (existingUser) {
+            const errorMessage = existingUser.username === username ? "Username déja existant" : "Email déja existant";
+            const error = new Error(errorMessage);
+            error.name = 'SequelizeUniqueConstraintError';
+            throw error;
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
@@ -55,6 +72,7 @@ exports.register = async (userData) => {
             type: process.env.STANDARD_PROFILE,
             created_at: new Date(),
             updated_at: new Date(),
+            status: 'Available',
         });
 
         const token = getTokenUser(newUser);

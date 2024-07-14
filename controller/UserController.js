@@ -122,9 +122,9 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error('Error during registration:', error);
     if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({ error: 'Username ou Email déja existant' });
+      return res.status(400).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 };
 
