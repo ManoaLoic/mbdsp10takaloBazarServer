@@ -5,7 +5,7 @@ const ObjectController = require("../controller/ObjectController");
 
 const { authorize } = require('../middleware/auth');
 
-router.patch("/:objectId/remove", ObjectController.removeObject);
+router.patch("/:objectId/remove", authorize(['USER']), ObjectController.removeObject);
 router.get("/:objectId", ObjectController.getObject);
 router.get("/:objectId/reports", authorize(['ADMIN']), ObjectController.getReports);
 router.delete("/:objectId", authorize(['ADMIN']), ObjectController.deleteObject);

@@ -5,7 +5,7 @@ const ReportController = require('../controller/ReportController');
 
 const { authorize } = require('../middleware/auth');
 
-router.post('/', ReportController.createReport);
+router.post('/', authorize(['USER']), ReportController.createReport);
 router.get('/', authorize(['ADMIN']), ReportController.listReportedObjects);
 
 module.exports = router;
