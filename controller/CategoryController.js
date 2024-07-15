@@ -15,7 +15,7 @@ exports.deleteCategory = async (req, res) => {
       });
     } else if (error.message === 'Category cannot be deleted because it is associated with other records') {
       return res.status(400).json({
-        message: "La catégorie ne peut pas être supprimée car elle est associée à d'autres enregistrements."
+        message: "La catégorie ne peut pas être supprimée car elle est associée à d'autres objets."
       });
     } else if (error.message.includes('violates foreign key constraint')) {
       return res.status(400).json({
