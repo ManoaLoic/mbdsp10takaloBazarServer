@@ -12,7 +12,7 @@ class ObjectRepository {
         throw new Error('Object not found');
       }
       object.deleted_At = new Date();
-      await object.save(); 
+      await object.save();
       return object;
     } catch (error) {
       console.error("Error deleting object:", error);
@@ -69,8 +69,8 @@ class ObjectRepository {
     const offset = (page - 1) * limit;
     const where = {};
 
+    where.deleted_At = null;
     if (userType !== 'ADMIN') {
-      where.deleted_At = null;
       where.user_id = { [Op.ne]: connectedUserId };
       where.status = 'Available';
     }
@@ -81,8 +81,9 @@ class ObjectRepository {
       {
         model: User,
         as: 'user',
-        required: false,
-        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
+        required: true,
+        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] },
+        where: { status: 'Available' }
       },
       {
         model: Category,
@@ -107,6 +108,7 @@ class ObjectRepository {
       currentPage: page
     };
   }
+
 
   applyfilter(filters, where, userType) {
     if (filters.user_id) {
