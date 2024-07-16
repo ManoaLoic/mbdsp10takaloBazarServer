@@ -5,6 +5,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+const bodyParser = require('body-parser');
 const { authenticate, authorize } = require('./middleware/auth');
 
 var indexRouter = require('./routes/index');
@@ -29,6 +30,9 @@ const dashboardRoute = require('./routes/dashboard');
 
 const { ADMIN_PROFILE, STANDARD_PROFILE } = process.env;
 var app = express();
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
