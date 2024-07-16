@@ -88,9 +88,32 @@ exports.register = async (userData) => {
 
 exports.addUser = async (userData) => {
     try {
-        const { username, password, email, first_name, last_name, gender, role } = userData;
+        const { username, password, email, first_name, last_name, gender, role, status, profile_picture } = userData;
+
+        const existingUser = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
+
+        if (existingUser) {
+            const errorMessage = existingUser.username === username ? "Username déja existant" : "Email déja existant";
+            const error = new Error(errorMessage);
+            error.name = 'SequelizeUniqueConstraintError';
+            throw error;
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        let profilePictureUrl = null;
+        if (profile_picture) {
+            const fileExtension = mime.extension(profile_picture.split(';')[0].split(':')[1]);
+            const fileName = `images/user/${Date.now()}_${(first_name + " " + last_name).replaceAll(' ', '_')}.${fileExtension}`;
+            profilePictureUrl = await uploadFile(profile_picture.split('base64,')[1], fileName);
+        }
 
         const newUser = await User.create({
             username,
@@ -99,9 +122,11 @@ exports.addUser = async (userData) => {
             first_name,
             last_name,
             gender,
-            type: role,  // Utiliser le rôle fourni
+            type: role,  
             created_at: new Date(),
             updated_at: new Date(),
+            status: status || 'Available',
+            profile_picture: profilePictureUrl
         });
 
         const token = getTokenUser(newUser);
