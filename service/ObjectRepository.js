@@ -122,11 +122,11 @@ class ObjectRepository {
     }
 
     if (filters.name) {
-      where.name = { [Op.like]: `%${filters.name}%` };
+      where.name = { [Op.iLike]: `%${filters.name}%` };
     }
 
     if (filters.description) {
-      where.description = { [Op.like]: `%${filters.description}%` };
+      where.description = { [Op.iLike]: `%${filters.description}%` };
     }
 
     if (filters.created_at_start || filters.created_at_end) {
