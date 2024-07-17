@@ -159,7 +159,18 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
     try {
         const proposerUser = await User.findByPk(prpUserID);
         const receiverUser = await User.findByPk(rcvUserId);
-        const receiverObject = await Object.findAll({
+
+        if (!proposerUser || !receiverUser) {
+            const error = new Error("L'utilisateur Proposeur ou Receveur n'existe pas.");
+            error.statusCode = 404;
+            throw error;
+        }
+        if (proposerUser.status === 'Deleted' || receiverUser.status === 'Deleted') {
+            const error = new Error(`Le compte de ${proposerUser.status === 'Deleted' ? "Proposeur" : "Receveur"} n'est pas valide.`);
+            error.statusCode = 400;
+            throw error;
+        }
+        const receiverObjects = await Object.findAll({
             where: {
                 id: rcvObjectId,
                 user_id: rcvUserId,
@@ -173,11 +184,16 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
                 status: 'Available'
             }
         });
-
-        if (!proposerUser || !receiverUser || receiverObject.length !== rcvObjectId.length || proposerObjects.length !== prpObjectId.length) {
-            throw new Error("La transaction ne peut pas être effectuée!");
+        if (proposerObjects.length !== prpObjectId.length) {
+            const error = new Error("Les objets proposés n'appartiennent pas au proposeur.");
+            error.statusCode = 400;
+            throw error;
         }
-
+        if (receiverObjects.length !== rcvObjectId.length) {
+            const error = new Error("Les objets reçus n'appartiennent pas au receveur.");
+            error.statusCode = 400;
+            throw error;
+        }
         const newExchange = await Exchange.create({
             proposer_user_id: prpUserID,
             receiver_user_id: rcvUserId,
@@ -187,10 +203,10 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
         });
 
         await Promise.all([
-            ...receiverObject.map(rcvObjet =>
+            ...receiverObjects.map(rcvObject =>
                 ExchangeObject.create({
                     exchange_id: newExchange.id,
-                    object_id: rcvObjet.id,
+                    object_id: rcvObject.id,
                     user_id: rcvUserId
                 })
             ),
