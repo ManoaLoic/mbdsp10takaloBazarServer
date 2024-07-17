@@ -54,7 +54,7 @@ app.use(prefix + '/register', registerRoute);
 app.use(prefix + '/dashboard', authenticate, authorize([ADMIN_PROFILE]), dashboardRoute);
 app.use(prefix + '/user', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), userRouter);
 app.use(prefix + '/users', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), usersRouter);
-app.use(prefix + '/categories', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), categoriesRouter);
+app.use(prefix + '/categories', categoriesRouter);
 app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/exchanges', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangesRoutes);
