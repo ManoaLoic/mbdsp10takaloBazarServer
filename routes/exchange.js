@@ -8,5 +8,7 @@ router.post('/proposed', authorize(['USER']), exchangeController.proposerExchang
 router.get('/history/:userId', authorize(['USER']), exchangeController.getHistoriqueExchange);
 router.patch('/:exchangeId/reject', authorize(['USER']), exchangeController.rejectExchange);
 router.patch('/:exchangeId/accept', authorize(['USER']), exchangeController.acceptExchange);
+router.get('/:exchangeId', authorize(['USER', 'ADMIN']), exchangeController.getExchangeById);
+
 
 module.exports = router;

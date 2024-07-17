@@ -14,10 +14,10 @@ function defineAssociations() {
 
     Exchange.belongsTo(User, { foreignKey: 'proposer_user_id', as: 'proposer' });
     Exchange.belongsTo(User, { foreignKey: 'receiver_user_id', as: 'receiver' });
-    Exchange.hasMany(ExchangeObject, { foreignKey: 'exchange_id' });
+    Exchange.hasMany(ExchangeObject, { foreignKey: 'exchange_id', as: 'exchange_objects' });
 
     ExchangeObject.belongsTo(Exchange, { foreignKey: 'exchange_id' });
-    ExchangeObject.belongsTo(Object, { foreignKey: 'object_id' });
+    ExchangeObject.belongsTo(Object, { foreignKey: 'object_id', as: 'object' });
     ExchangeObject.belongsTo(User, { foreignKey: 'user_id' });
 
     Object.belongsTo(User, {as: 'user', foreignKey: 'user_id' });

@@ -91,6 +91,38 @@ exports.findExchanges = async (filters, offset, limit, orderBy = 'created_at', o
     });
 }
 
+exports.findExchangeById = async (exchangeId) => {
+    try {
+        return await Exchange.findByPk(exchangeId, {
+            include: [
+                {
+                    model: User,
+                    as: 'proposer',
+                    attributes: ['id', 'username', 'email', 'first_name', 'last_name'],
+                },
+                {
+                    model: User,
+                    as: 'receiver',
+                    attributes: ['id', 'username', 'email', 'first_name', 'last_name'],
+                },
+                {
+                    model: ExchangeObject,
+                    as: 'exchange_objects',
+                    include: {
+                        model: Object,
+                        as: 'object',
+                        attributes: ['id', 'name', 'description', 'image'],
+                    },
+                }
+            ],
+        });
+    } catch (error) {
+        console.error('Error fetching exchange by ID:', error);
+        throw error;
+    }
+};
+  
+
 exports.getTopUsersByExchanges = async (limit = 10) => {
     const query = `
         SELECT user_id, username, COUNT(*) AS exchange_count

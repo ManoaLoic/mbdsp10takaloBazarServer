@@ -23,6 +23,20 @@ exports.getExchanges = async (req, res) => {
   }
 };
 
+exports.getExchangeById = async (req, res) => {
+  try {
+    const { exchangeId } = req.params;
+    const exchange = await ExchangeRepository.findExchangeById(exchangeId);
+    if (!exchange) {
+      return res.status(404).json({ message: "Exchange not found" });
+    }
+    return res.status(200).json(exchange);
+  } catch (error) {
+    console.error('Error fetching exchange:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 exports.getTopUsersByExchanges = async (req, res) => {
   try {
     const topUsers = await ExchangeRepository.getTopUsersByExchanges();
