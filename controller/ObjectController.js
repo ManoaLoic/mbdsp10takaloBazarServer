@@ -90,7 +90,7 @@ exports.getObjects = async (req, res) => {
       updated_at_end
     };
 
-    const { type, id } = req.user;
+    const { type, id } = req.user || {};
 
     order_by = order_by || 'created_at';
     order_direction = order_direction || 'DESC';

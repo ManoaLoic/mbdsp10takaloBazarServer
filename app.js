@@ -60,7 +60,7 @@ app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_P
 app.use(prefix + '/exchanges', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangesRoutes);
 app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportsRoutes);
 app.use(prefix + '/typeReport', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
-app.use(prefix + '/objects', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectsRoute);
+app.use(prefix + '/objects', objectsRoute);
 app.use(prefix + '/object', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), objectRoute);
 app.use(prefix + '/reports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), reportsRoute);
 app.use(prefix + '/report', authenticate, authorize([ADMIN_PROFILE]), reportRoute);

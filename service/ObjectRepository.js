@@ -71,7 +71,9 @@ class ObjectRepository {
 
     where.deleted_At = null;
     if (userType !== 'ADMIN') {
-      where.user_id = { [Op.ne]: connectedUserId };
+      if (connectedUserId) {
+        where.user_id = { [Op.ne]: connectedUserId };
+      }
       where.status = 'Available';
     }
 
