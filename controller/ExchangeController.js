@@ -92,7 +92,7 @@ exports.proposerExchange = async (req, res) => {
       exchange: exchange,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       message: "ERROR",
       error: error.message,
     });
