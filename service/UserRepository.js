@@ -157,12 +157,21 @@ exports.getUserProfile = async (userId) => {
     }
 };
 
-exports.userUpdate = async (id, updates) => {
-    // 
+exports.userUpdate = async (id, updates, role, userId) => {
     try {
       const user = await User.findByPk(id);
       if (!user) {
-        return null;
+        const error = new Error('Utilisateur non trouvé');
+        error.statusCode = 404;
+        throw error;
+      }
+      if(role === 'USER'){
+        console.log(id , user.id);
+        if(userId != user.id){
+            const error = new Error('Vous n\'êtes pas autorisé à modifier cet utilisateur');
+            error.statusCode = 403;
+            throw error;
+        }
       }
 
       if (updates.password) {
@@ -170,10 +179,10 @@ exports.userUpdate = async (id, updates) => {
         updates.password = await bcrypt.hash(updates.password, salt);
       }
       
-    if(updates.profile_picture){
-        const fileExtension = mime.extension(updates.profile_picture.split(';')[0].split(':')[1]);
+    if(updates.image){
+        const fileExtension = mime.extension(updates.image.split(';')[0].split(':')[1]);
         const fileName = `images/user/${Date.now()}_${(user.first_name+" "+user.last_name).replaceAll(' ', '_')}.${fileExtension}`;
-        updates.profile_picture = await uploadFile(updates.profile_picture.split('base64,')[1], fileName);
+        updates.profile_picture = await uploadFile(updates.image.split('base64,')[1], fileName);
     }
 
       return await user.update(updates);
