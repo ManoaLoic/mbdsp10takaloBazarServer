@@ -30,6 +30,7 @@ exports.login = async (username, pwd, type) => {
                 return {
                     token,
                     username: user.username,
+                    id : user.id
                 };
             }
         }
