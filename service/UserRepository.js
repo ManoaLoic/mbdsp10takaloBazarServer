@@ -30,7 +30,7 @@ exports.login = async (username, pwd, type) => {
                 return {
                     token,
                     username: user.username,
-                    id : user.id
+                    id: user.id
                 };
             }
         }
@@ -201,6 +201,12 @@ exports.userUpdate = async (id, updates, role, userId) => {
       }
 
       if (updates.password) {
+        const isPasswordValid = await bcrypt.compare(updates.oldPassword, user.password);
+        if(!isPasswordValid){
+            const error = new Error('Votre ancien mot de passe est incorrect.');
+            error.statusCode = 400;
+            throw error;
+        }
         const salt = await bcrypt.genSalt(10);
         updates.password = await bcrypt.hash(updates.password, salt);
       }
@@ -210,8 +216,8 @@ exports.userUpdate = async (id, updates, role, userId) => {
         const fileName = `images/user/${Date.now()}_${(user.first_name+" "+user.last_name).replaceAll(' ', '_')}.${fileExtension}`;
         updates.profile_picture = await uploadFile(updates.image.split('base64,')[1], fileName);
     }
-
-      return await user.update(updates);
+    updates.updated_at = new Date();
+    return await user.update(updates);
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;
