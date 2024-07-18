@@ -100,7 +100,7 @@ exports.loginAdmin = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const userProfile = await UserRepository.getUserProfile(req.user.id);
+    const userProfile = await UserRepository.getUserProfile(req.params.id);
     res.status(200).json({
       message: "SUCCESS",
       user: userProfile
