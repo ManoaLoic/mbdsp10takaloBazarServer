@@ -151,12 +151,15 @@ exports.addUser = async (req, res) => {
 exports.userUpdate = async (req, res) => {
   const { id } = req.params;
   const userType = req.user.type;
-  const { username,image, email, password, confirmPassword, first_name, last_name, profile_picture, gender } = req.body;
+  const { username,image, email, oldPassword, password, confirmPassword, first_name, last_name, profile_picture, gender } = req.body;
 
-  if (password && password !== confirmPassword) {
+  if (password && ( !confirmPassword || password !== confirmPassword)) {
     return res.status(400).json({ error: 'Les mots de passe ne correspondent pas' });
   }
 
+  if (password && !oldPassword) {
+    return res.status(400).json({ error: 'Veuillez saisir votre mot de passe précédent.' });
+  }
   try {
     const updates = {
       username,
@@ -164,6 +167,7 @@ exports.userUpdate = async (req, res) => {
       first_name,
       last_name,
       profile_picture,
+      oldPassword,
       image,
       gender,
       password
