@@ -187,7 +187,7 @@ exports.updateObject = async (req, res) => {
       data: updatedObject
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
 

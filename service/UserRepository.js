@@ -81,6 +81,7 @@ exports.register = async (userData) => {
         return {
             token,
             username: newUser.username,
+            id: newUser.id
         };
     } catch (error) {
         throw error;
