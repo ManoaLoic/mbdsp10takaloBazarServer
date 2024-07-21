@@ -103,7 +103,7 @@ exports.findExchangeById = async (exchangeId) => {
                 {
                     model: User,
                     as: 'receiver',
-                    attributes: ['id', 'username', 'email', 'first_name', 'last_name'],
+                    attributes: ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture'],
                 },
                 {
                     model: ExchangeObject,
