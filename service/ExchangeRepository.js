@@ -98,7 +98,7 @@ exports.findExchangeById = async (exchangeId) => {
                 {
                     model: User,
                     as: 'proposer',
-                    attributes: ['id', 'username', 'email', 'first_name', 'last_name'],
+                    attributes: ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture'],
                 },
                 {
                     model: User,
