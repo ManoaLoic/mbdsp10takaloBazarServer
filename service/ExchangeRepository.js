@@ -121,7 +121,7 @@ exports.findExchangeById = async (exchangeId) => {
         throw error;
     }
 };
-  
+
 
 exports.getTopUsersByExchanges = async (limit = 10) => {
     const query = `
@@ -269,11 +269,12 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
     const transaction = await sequelize.transaction();
 
     try {
-        if(!isDateInFuture(body.appointment_date)){
+        if (!isDateInFuture(body.appointment_date)) {
             const error = new Error('La date du rendez-vous est déjà passée. Veuillez sélectionner une date dans le futur.');
             error.statusCode = 400;
             throw error;
         }
+
         const exchange = await Exchange.findByPk(exchangeId, { transaction });
 
         if (!exchange) {
@@ -306,20 +307,52 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
         const proposerUserId = exchange.proposer_user_id;
         const receiverUserId = exchange.receiver_user_id;
 
-        const proposerObjects = exchangeObjects.filter(eo => eo.user_id === proposerUserId);
-        const receiverObjects = exchangeObjects.filter(eo => eo.user_id === receiverUserId);
+        const proposerObjectIds = exchangeObjects
+            .filter(eo => eo.user_id === proposerUserId)
+            .map(eo => eo.object_id);
+        const receiverObjectIds = exchangeObjects
+            .filter(eo => eo.user_id === receiverUserId)
+            .map(eo => eo.object_id);
 
-        const proposerObjectIds = proposerObjects.map(eo => eo.object_id);
+        // Update the ownership of objects
         await Object.update(
             { user_id: receiverUserId },
             { where: { id: proposerObjectIds }, transaction }
         );
 
-        const receiverObjectIds = receiverObjects.map(eo => eo.object_id);
         await Object.update(
             { user_id: proposerUserId },
             { where: { id: receiverObjectIds }, transaction }
         );
+
+        const allObjectIds = [...proposerObjectIds, ...receiverObjectIds];
+        const exchangesToCancel = await Exchange.findAll({
+            where: {
+                status: 'Proposed',
+                id: { [Op.ne]: exchangeId }
+            },
+            include: [{
+                model: ExchangeObject,
+                as: 'exchange_objects',
+                where: {
+                    object_id: { [Op.in]: allObjectIds }
+                }
+            }],
+            transaction
+        });
+
+        const exchangeIdsToCancel = exchangesToCancel.map(e => e.id);
+        if (exchangeIdsToCancel.length > 0) {
+            await Exchange.update(
+                {
+                    status: 'Cancelled',
+                    updated_at: new Date(),
+                    date: new Date(),
+                    note: "[Action automatique] L'un des objets a changé de propriétaire" 
+                },
+                { where: { id: { [Op.in]: exchangeIdsToCancel } }, transaction }
+            );
+        }
 
         await transaction.commit();
         return exchange;
