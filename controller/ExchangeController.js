@@ -115,12 +115,26 @@ exports.proposerExchange = async (req, res) => {
 
 exports.acceptExchange = async (req, res) => {
   const { exchangeId } = req.params;
+  const body = req.body;
   const userId = req.user.id;
-
   try {
+
+    if(!body.meeting_place){
+      res.status(400).json({
+        error: 'Lieu du rendez-vous est requis',
+      });
+      return;
+    }
+    if(!body.appointment_date){
+      res.status(400).json({
+        error: 'Date du rendez-vous est requis',
+      });
+      return;
+    }
     const exchange = await ExchangeRepository.acceptExchange(
       exchangeId,
-      userId
+      userId,
+      body
     );
     res.status(200).json({
       message: "Échange accepté avec succès",

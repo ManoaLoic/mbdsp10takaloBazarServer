@@ -257,10 +257,23 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
     }
 };
 
-exports.acceptExchange = async (exchangeId, userId) => {
+isDateInFuture = (date) => {
+    const today = new Date();
+    const date1 = new Date(date);
+    today.setHours(0, 0, 0, 0);
+    date1.setHours(0, 0, 0, 0);
+    return date1 > today;
+}
+
+exports.acceptExchange = async (exchangeId, userId, body) => {
     const transaction = await sequelize.transaction();
 
     try {
+        if(!isDateInFuture(body.appointment_date)){
+            const error = new Error('La date du rendez-vous est déjà passée. Veuillez sélectionner une date dans le futur.');
+            error.statusCode = 400;
+            throw error;
+        }
         const exchange = await Exchange.findByPk(exchangeId, { transaction });
 
         if (!exchange) {
@@ -277,6 +290,8 @@ exports.acceptExchange = async (exchangeId, userId) => {
 
         exchange.status = 'Accepted';
         exchange.updated_at = new Date();
+        exchange.meeting_place = body.meeting_place;
+        exchange.appointment_date = body.appointment_date;
         exchange.date = new Date();
         await exchange.save({ transaction });
 
