@@ -65,8 +65,10 @@ exports.createObject = async (req, res) => {
     const object = await ObjectRepository.createObject(newObject);
     res.status(201).json(object);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur interne du serveur');
+    res.status(500).json({
+      message: "ERROR",
+      error: error.message,
+    });
   }
 };
 
