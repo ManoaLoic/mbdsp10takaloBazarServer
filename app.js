@@ -58,7 +58,7 @@ app.use(prefix + '/categories', categoriesRouter);
 app.use(prefix + '/category', authenticate, authorize([ADMIN_PROFILE]), categoryRouter);
 app.use(prefix + '/exchange', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangeRoutes);
 app.use(prefix + '/exchanges', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), exchangesRoutes);
-app.use(prefix + '/typeReports', authenticate, authorize([ADMIN_PROFILE, STANDARD_PROFILE]), typeReportsRoutes);
+app.use(prefix + '/typeReports', typeReportsRoutes);
 app.use(prefix + '/typeReport', authenticate, authorize([ADMIN_PROFILE]), typeReportRoutes);
 app.use(prefix + '/objects', objectsRoute);
 app.use(prefix + '/object', objectRoute);
