@@ -5,6 +5,16 @@ const Sequelize = require('sequelize');
 
 class CategoryRepository {
 
+  async getCategoryById(id) {
+    try {
+      const category = await Category.findByPk(id);
+      return category;
+    } catch (error) {
+      console.error('Error fetching category by ID:', error);
+      throw error;
+    }
+  }
+
   async deleteCategory(categoryId) {
     const category = await Category.findByPk(categoryId);
     if (!category) {
@@ -92,5 +102,6 @@ class CategoryRepository {
     }
   }
 }
+
 
 module.exports = new CategoryRepository();
