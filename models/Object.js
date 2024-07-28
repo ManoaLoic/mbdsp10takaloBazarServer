@@ -7,7 +7,7 @@ const Object = sequelize.define('Object', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
+        defaultValue: sequelize.literal("nextval('object_id_seq')"),
     },
     name: {
         type: DataTypes.STRING,
