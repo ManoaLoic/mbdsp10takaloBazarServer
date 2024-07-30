@@ -125,15 +125,28 @@ exports.findExchangeById = async (exchangeId) => {
 
 exports.getTopUsersByExchanges = async (limit = 10) => {
     const query = `
-        SELECT user_id, username, COUNT(*) AS exchange_count
-        FROM (
-            SELECT proposer_user_id AS user_id FROM "Exchange"
-            UNION ALL
-            SELECT receiver_user_id AS user_id FROM "Exchange"
-        ) AS combined
-        JOIN "User" ON combined.user_id = "User".id
-        GROUP BY user_id, username
-        ORDER BY exchange_count DESC
+        WITH total_exchanges AS (
+            SELECT COUNT(*) AS total
+            FROM (
+                SELECT proposer_user_id FROM "Exchange"
+                UNION ALL
+                SELECT receiver_user_id FROM "Exchange"
+            ) AS combined
+        ),
+        user_exchanges AS (
+            SELECT user_id, username, COUNT(*) AS exchange_count
+            FROM (
+                SELECT proposer_user_id AS user_id FROM "Exchange"
+                UNION ALL
+                SELECT receiver_user_id AS user_id FROM "Exchange"
+            ) AS combined
+            JOIN "User" ON combined.user_id = "User".id
+            GROUP BY user_id, username
+        )
+        SELECT user_exchanges.user_id, user_exchanges.username, user_exchanges.exchange_count,
+               (user_exchanges.exchange_count::float / total_exchanges.total * 100) AS percentage
+        FROM user_exchanges, total_exchanges
+        ORDER BY user_exchanges.exchange_count DESC
         LIMIT :limit;
     `;
 
@@ -144,6 +157,7 @@ exports.getTopUsersByExchanges = async (limit = 10) => {
 
     return result;
 }
+
 
 exports.getOpenExchanges = async (userId) => {
     const where = {
