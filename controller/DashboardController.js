@@ -6,11 +6,17 @@ exports.getStatistics = async (req, res) => {
   try {
     const [
       ongoingExchanges,
+      refusedExchanges,
+      acceptedExchanges,
+      cancelledExchanges,
       objectsByCategory,
       exchangesBetweenDates,
       exchangesByUser,
     ] = await Promise.all([
       ExchangeRepository.getCountByStatus ('Proposed'),
+      ExchangeRepository.getCountByStatus ('Refused'),
+      ExchangeRepository.getCountByStatus ('Accepted'),
+      ExchangeRepository.getCountByStatus ('Cancelled'),
       categoryRepository.getCategoryStatistics(),
       ExchangeRepository.getExchangesBetweenDates(date1, date2, status),
       ExchangeRepository.getTopUsersByExchanges(),
@@ -18,6 +24,9 @@ exports.getStatistics = async (req, res) => {
 
     return res.status(200).json({
       ongoingExchanges,
+      refusedExchanges,
+      acceptedExchanges,
+      cancelledExchanges,
       objectsByCategory,
       exchangesBetweenDates,
       exchangesByUser,
