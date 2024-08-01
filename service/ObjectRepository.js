@@ -12,6 +12,7 @@ class ObjectRepository {
         throw new Error('Object not found');
       }
       object.deleted_At = new Date();
+      object.status = 'Deleted';
       await object.save();
       return object;
     } catch (error) {
