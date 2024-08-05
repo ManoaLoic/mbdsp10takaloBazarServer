@@ -1,18 +1,17 @@
 const { Op } = require("sequelize");
 const ObjectModel = require("../models/Object");
-const User = require('../models/User');
-const Category = require('../models/Category');
+const User = require("../models/User");
+const Category = require("../models/Category");
 
 class ObjectRepository {
-
   async deleteObject(objectId) {
     try {
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
-        throw new Error('Object not found');
+        throw new Error("Object not found");
       }
       object.deleted_At = new Date();
-      object.status = 'Deleted';
+      object.status = "Deleted";
       await object.save();
       return object;
     } catch (error) {
@@ -21,14 +20,23 @@ class ObjectRepository {
     }
   }
 
-  async getMyObjects(filters, userType, userId, connectedUserId, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
+  async getMyObjects(
+    filters,
+    userType,
+    userId,
+    connectedUserId,
+    page = 1,
+    limit = 50,
+    orderBy = "created_at",
+    orderDirection = "DESC"
+  ) {
     const offset = (page - 1) * limit;
     const where = {};
 
     where.deleted_At = null;
     where.user_id = userId;
     if (userId != connectedUserId) {
-      where.status = 'Available';
+      where.status = "Available";
     }
 
     this.applyfilter(filters, where, userType);
@@ -36,17 +44,23 @@ class ObjectRepository {
     const include = [
       {
         model: User,
-        as: 'user',
-        where: filters.user_name ? { username: { [Op.like]: `%{filters.user_name}%` } } : undefined,
+        as: "user",
+        where: filters.user_name
+          ? { username: { [Op.like]: `%{filters.user_name}%` } }
+          : undefined,
         required: false,
-        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] }
+        attributes: {
+          exclude: ["password", "type", "created_at", "updated_at"],
+        },
       },
       {
         model: Category,
-        as: 'category',
-        where: filters.category_name ? { name: { [Op.like]: `%{filters.category_name}%` } } : undefined,
-        required: false
-      }
+        as: "category",
+        where: filters.category_name
+          ? { name: { [Op.like]: `%{filters.category_name}%` } }
+          : undefined,
+        required: false,
+      },
     ];
 
     const { rows: objects, count } = await ObjectModel.findAndCountAll({
@@ -62,20 +76,28 @@ class ObjectRepository {
     return {
       objects,
       totalPages,
-      currentPage: page
+      currentPage: page,
     };
   }
 
-  async getObjects(filters, connectedUserId, userType, page = 1, limit = 50, orderBy = 'created_at', orderDirection = 'DESC') {
+  async getObjects(
+    filters,
+    connectedUserId,
+    userType,
+    page = 1,
+    limit = 50,
+    orderBy = "created_at",
+    orderDirection = "DESC"
+  ) {
     const offset = (page - 1) * limit;
     const where = {};
 
     where.deleted_At = null;
-    if (userType !== 'ADMIN') {
+    if (userType !== "ADMIN") {
       if (connectedUserId) {
         where.user_id = { [Op.ne]: connectedUserId };
       }
-      where.status = 'Available';
+      where.status = "Available";
     }
 
     this.applyfilter(filters, where, userType);
@@ -83,16 +105,18 @@ class ObjectRepository {
     const include = [
       {
         model: User,
-        as: 'user',
+        as: "user",
         required: true,
-        attributes: { exclude: ['password', 'type', 'created_at', 'updated_at'] },
-        where: { status: 'Available' }
+        attributes: {
+          exclude: ["password", "type", "created_at", "updated_at"],
+        },
+        where: { status: "Available" },
       },
       {
         model: Category,
-        as: 'category',
-        required: false
-      }
+        as: "category",
+        required: false,
+      },
     ];
 
     const { rows: objects, count } = await ObjectModel.findAndCountAll({
@@ -108,10 +132,9 @@ class ObjectRepository {
     return {
       objects,
       totalPages,
-      currentPage: page
+      currentPage: page,
     };
   }
-
 
   applyfilter(filters, where, userType) {
     if (filters.user_id) {
@@ -150,7 +173,7 @@ class ObjectRepository {
       }
     }
 
-    if (userType === 'ADMIN') {
+    if (userType === "ADMIN") {
       if (filters.status) {
         where.status = filters.status;
       }
@@ -188,7 +211,11 @@ class ObjectRepository {
     try {
       const objectDetails = await ObjectModel.findByPk(objectId, {
         include: [
-          { model: User, as: "user", attributes: ["id", "username", "email"] },
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "username", "email", "profile_picture"],
+          },
           { model: Category, as: "category", attributes: ["id", "name"] },
         ],
       });
@@ -205,25 +232,29 @@ class ObjectRepository {
       const user = await User.findByPk(userID);
       const object = await ObjectModel.findByPk(objectId);
       if (!object) {
-        const error = new Error('Objet non trouvé');
+        const error = new Error("Objet non trouvé");
         error.statusCode = 404;
         throw error;
       }
       if (!user) {
-        const error = new Error('Utilisateur non trouvé.Veuillez vous reconnectez!');
+        const error = new Error(
+          "Utilisateur non trouvé.Veuillez vous reconnectez!"
+        );
         error.statusCode = 404;
         throw error;
       }
-      if (user.type === 'USER') {
+      if (user.type === "USER") {
         if (object.user_id !== user.id) {
-          const error = new Error('Vous ne pouvez pas modifier cet Objet car ce n\'est pas à vous!');
+          const error = new Error(
+            "Vous ne pouvez pas modifier cet Objet car ce n'est pas à vous!"
+          );
           error.statusCode = 403;
           throw error;
         } else {
           await object.update(data);
         }
       }
-      if (user.type === 'ADMIN') {
+      if (user.type === "ADMIN") {
         await object.update(data);
       }
       return object;
@@ -236,12 +267,10 @@ class ObjectRepository {
     try {
       return await ObjectModel.create(data);
     } catch (error) {
-      console.error('Error creating object:', error);
+      console.error("Error creating object:", error);
       throw error;
     }
   }
-
-
 }
 
 module.exports = new ObjectRepository();
