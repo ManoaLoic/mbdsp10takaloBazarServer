@@ -149,6 +149,7 @@ function getTokenUser(user) {
         first_name: user.first_name,
         last_name: user.last_name,
         username: user.username,
+        profile_picture: user.profile_picture || '',
         type: user.type,
         jti: user.id + '-' + new Date().getTime(),
     }, process.env.SECRET_KEY, {
