@@ -214,7 +214,7 @@ class ObjectRepository {
           {
             model: User,
             as: "user",
-            attributes: ["id", "username", "email", "profile_picture"],
+            attributes: ["id", "username", "email", "profile_picture","gender"],
           },
           { model: Category, as: "category", attributes: ["id", "name"] },
         ],
