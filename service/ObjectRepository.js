@@ -207,6 +207,25 @@ class ObjectRepository {
       throw error;
     }
   }
+
+  async rePostObject(objectId, userId) {
+    try {
+      const object = await ObjectModel.findByPk(objectId);
+      if (!object) {
+        return null;
+      }
+      if (object.user_id != userId) {
+        return 1;
+      }
+      object.status = "Available";
+      await object.save();
+      return object;
+    } catch (error) {
+      console.error("Error updating object status:", error);
+      throw error;
+    }
+  }
+
   async getObject(objectId) {
     try {
       const objectDetails = await ObjectModel.findByPk(objectId, {
@@ -214,7 +233,7 @@ class ObjectRepository {
           {
             model: User,
             as: "user",
-            attributes: ["id", "username", "email", "profile_picture","gender"],
+            attributes: ["id", "username", "email", "profile_picture", "gender"],
           },
           { model: Category, as: "category", attributes: ["id", "name"] },
         ],
