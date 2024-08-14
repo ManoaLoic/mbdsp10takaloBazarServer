@@ -28,13 +28,17 @@ class ObjectRepository {
     page = 1,
     limit = 50,
     orderBy = "created_at",
-    orderDirection = "DESC"
+    orderDirection = "DESC",
+    status
   ) {
     const offset = (page - 1) * limit;
     const where = {};
 
     where.deleted_At = null;
     where.user_id = userId;
+    if(status){
+      where.status = status;
+    }
     if (userId != connectedUserId) {
       where.status = "Available";
     }

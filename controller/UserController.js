@@ -29,7 +29,7 @@ exports.getUserObjects = async (req, res) => {
     order_by = order_by || 'created_at';
     order_direction = order_direction || 'DESC';
 
-    const { objects, totalPages, currentPage } = await ObjectRepository.getMyObjects(filters, userType, userId, connectedUserId, parseInt(page), parseInt(limit), order_by, order_direction);
+    const { objects, totalPages, currentPage } = await ObjectRepository.getMyObjects(filters, userType, userId, connectedUserId, parseInt(page), parseInt(limit), order_by, order_direction,status);
 
     res.status(200).json({
       data: {
