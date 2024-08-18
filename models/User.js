@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const { DEFAULT_USER_PROFILE } = require('../constants');
 
 const User = sequelize.define('User', {
     id: {
@@ -30,6 +31,10 @@ const User = sequelize.define('User', {
     profile_picture: {
         type: DataTypes.STRING,
         allowNull: true,
+        get() {
+            const rawValue = this.getDataValue('profile_picture');
+            return rawValue ? rawValue : DEFAULT_USER_PROFILE;
+        },
     },
     gender: {
         type: DataTypes.STRING,
