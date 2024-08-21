@@ -483,7 +483,7 @@ exports.getExchangesBetweenDates = async (date1, date2, status) => {
             });
 
             result = result.map(item => ({
-                period: item.getDataValue('year'),
+                period: item.getDataValue('year').toString(),
                 exchange_count: item.getDataValue('exchange_count'),
                 type: 'year'
             }));
