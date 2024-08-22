@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const DeviceInfoSchema = new mongoose.Schema({
-  serialNumber: { type: String, required: true },
-  tokken: { type: String, required: true }
+  serialNumber: { type: String},
+  tokken: { type: String }
 });
 
 const DeviceSchema = new mongoose.Schema({
-  userID:{ type: Number, required: true, unique: true },
+  userID:{ type: Number},
   infos: [DeviceInfoSchema]
 });
 

@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Object = require("../models/Object");
 const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
+const DeviceSchemaRepository = require("../service/FireBaseService/DeviceService");
 
 exports.findExchanges = async (filters, offset, limit, orderBy = 'created_at', orderDirection = 'DESC') => {
     orderBy = orderBy || 'created_at';
@@ -265,6 +266,9 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
                 })
             )
         ]);
+        if(newExchange){
+            await DeviceSchemaRepository.sendNotification(rcvUserId,"Proposed");
+        }
         return newExchange;
     } catch (err) {
         throw err;
@@ -369,6 +373,7 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
         }
 
         await transaction.commit();
+        await DeviceSchemaRepository.sendNotification(proposerUserId,"Accepted");
         return exchange;
     } catch (error) {
         await transaction.rollback();
@@ -445,6 +450,7 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
         exchange.updated_at = new Date();
         exchange.date = new Date();
         await exchange.save();
+        await DeviceSchemaRepository.sendNotification(exchange.proposer_user_id,"Rejected")
         return exchange;
     } catch (error) {
         console.error('Error updating exchange status:', error);
