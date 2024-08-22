@@ -1,4 +1,5 @@
 require('dotenv').config();
+require("./config/dbMongo");
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');

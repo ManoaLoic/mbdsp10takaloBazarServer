@@ -1,5 +1,7 @@
 const UserRepository = require("../service/UserRepository");
 const ObjectRepository = require("../service/ObjectRepository");
+const DeviceSchemaRepository = require("../service/FireBaseService/DeviceService");
+
 require('dotenv').config();
 
 exports.getUserObjects = async (req, res) => {
@@ -48,7 +50,7 @@ exports.getUserObjects = async (req, res) => {
 
 
 exports.loginUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password,serialNumber,tokken } = req.body;
 
   if (!username || !password) {
     return res
@@ -67,6 +69,11 @@ exports.loginUser = async (req, res) => {
             "Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.",
         });
     }
+
+    if(serialNumber && tokken){
+        await DeviceSchemaRepository.checkDevice(user.id,serialNumber,tokken);
+    }
+
     return res.status(200).json({ message: 'Connexion réussie', user });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
