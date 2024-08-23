@@ -45,14 +45,14 @@ class DeviceSchemaRepository {
 
       async sendNotification(userID,motif) {
         try {
-            const user = await Device.findOne({ userID: userID });
+            let user = await Device.findOne({ userID: userID });
             if (!user) {
                 console.error('Aucun utilisateur trouvé avec cet ID');
                 return;
             }
     
             const title = "Notification";
-            const message = null;
+            let message = null;
 
             if(motif==="Accepted"){
                 message = "Votre offre est accepté!"
@@ -62,7 +62,7 @@ class DeviceSchemaRepository {
                 message="Votre avez une proposition d'offre!"
             }
     
-            const messagePayload = {
+            let messagePayload = {
                 notification: {
                     title: title,
                     body: message
