@@ -420,7 +420,8 @@ exports.getHistoriqueExchange = async (userId, status, page, limit) => {
             appointment_date: exchange.appointment_date,
             meeting_place: exchange.meeting_place,
             created_at: exchange.created_at,
-            updated_at: exchange.updated_at
+            updated_at: exchange.updated_at,
+            date:exchange.date
         }));
 
         const totalPages = Math.ceil(count / limit);
