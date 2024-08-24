@@ -266,8 +266,8 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
                 })
             )
         ]);
-        if(newExchange){
-            await DeviceSchemaRepository.sendNotification(rcvUserId,"Proposed");
+        if (newExchange) {
+            await DeviceSchemaRepository.sendNotification(rcvUserId, "Proposed");
         }
         return newExchange;
     } catch (err) {
@@ -312,6 +312,8 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
         exchange.meeting_place = body.meeting_place;
         exchange.appointment_date = body.appointment_date;
         exchange.date = new Date();
+        exchange.latitude = body.latitude;
+        exchange.longitude = body.longitude;
         await exchange.save({ transaction });
 
         const exchangeObjects = await ExchangeObject.findAll({ where: { exchange_id: exchangeId }, transaction });
@@ -366,14 +368,14 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
                     status: 'Cancelled',
                     updated_at: new Date(),
                     date: new Date(),
-                    note: "[Action automatique] L'un des objets a changé de propriétaire" 
+                    note: "[Action automatique] L'un des objets a changé de propriétaire"
                 },
                 { where: { id: { [Op.in]: exchangeIdsToCancel } }, transaction }
             );
         }
 
         await transaction.commit();
-        await DeviceSchemaRepository.sendNotification(proposerUserId,"Accepted");
+        await DeviceSchemaRepository.sendNotification(proposerUserId, "Accepted");
         return exchange;
     } catch (error) {
         await transaction.rollback();
@@ -451,7 +453,7 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
         exchange.updated_at = new Date();
         exchange.date = new Date();
         await exchange.save();
-        await DeviceSchemaRepository.sendNotification(exchange.proposer_user_id,"Rejected")
+        await DeviceSchemaRepository.sendNotification(exchange.proposer_user_id, "Rejected")
         return exchange;
     } catch (error) {
         console.error('Error updating exchange status:', error);
@@ -530,7 +532,7 @@ exports.getExchangesBetweenDates = async (date1, date2, status) => {
             }));
         }
 
-        return result ;
+        return result;
     } catch (error) {
         throw error;
     }

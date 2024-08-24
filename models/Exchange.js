@@ -26,7 +26,7 @@ const Exchange = sequelize.define('Exchange', {
     },
     status: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     note: {
         type: DataTypes.TEXT,
@@ -38,6 +38,14 @@ const Exchange = sequelize.define('Exchange', {
     },
     meeting_place: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    latitude: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+    },
+    longitude: {
+        type: DataTypes.FLOAT,
         allowNull: true,
     },
     created_at: {

@@ -1,4 +1,5 @@
 const ExchangeRepository = require("../service/ExchangeRepository");
+const sendNotifService = require("../service/sendNotifService");
 
 exports.getExchanges = async (req, res) => {
   let { page, limit, orderBy, orderDirection, ...filters } = req.query;
@@ -119,15 +120,21 @@ exports.acceptExchange = async (req, res) => {
   const userId = req.user.id;
   try {
 
-    if(!body.meeting_place){
+    if (!body.meeting_place) {
       res.status(400).json({
         error: 'Lieu du rendez-vous est requis',
       });
       return;
     }
-    if(!body.appointment_date){
+    if (!body.appointment_date) {
       res.status(400).json({
         error: 'Date du rendez-vous est requis',
+      });
+      return;
+    }
+    if (!body.latitude ^ !body.longitude) {
+      res.status(400).json({
+        error: 'Les coordonnées ne sont pas complètes',
       });
       return;
     }
@@ -224,6 +231,16 @@ exports.getExchangesBetweenDates = async (req, res) => {
       status
     );
     return res.status(200).json({ exchanges });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.testNotif = async (req, res) => {
+  const { token, motif } = req.body;
+  try {
+    await sendNotifService.sendNotif(token, motif);
+    return res.status(200).json({ message: 'Notif envoyé' });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
