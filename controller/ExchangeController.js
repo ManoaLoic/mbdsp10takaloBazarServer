@@ -132,6 +132,12 @@ exports.acceptExchange = async (req, res) => {
       });
       return;
     }
+    if (!body.latitude ^ !body.longitude) {
+      res.status(400).json({
+        error: 'Les coordonnées ne sont pas complètes',
+      });
+      return;
+    }
     const exchange = await ExchangeRepository.acceptExchange(
       exchangeId,
       userId,
