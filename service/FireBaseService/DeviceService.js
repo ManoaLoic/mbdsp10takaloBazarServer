@@ -55,9 +55,9 @@ class DeviceSchemaRepository {
             let message = null;
 
             if(motif==="Accepted"){
-                message = userInfo.pseudo+ " a accepté votre offre"
+                message = userInfo.username+ " a accepté votre offre"
             }else if(motif==="Rejected"){
-                message= userInfo.pseudo+ " a refusé votre offre"
+                message= userInfo.username+ " a refusé votre offre"
             }else if(motif==="Proposed"){
                 message="Vous avez reçu une nouvelle offre de "+userInfo.username
             }
