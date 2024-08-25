@@ -59,7 +59,7 @@ class DeviceSchemaRepository {
             }else if(motif==="Rejected"){
                 message= userInfo.pseudo+ " a refusé votre offre"
             }else if(motif==="Proposed"){
-                message="Vous avez reçu une nouvelle offre de "+userInfo.pseudo
+                message="Vous avez reçu une nouvelle offre de "+userInfo.username
             }
     
             let messagePayload = {
