@@ -43,9 +43,9 @@ class DeviceSchemaRepository {
     
       
 
-      async sendNotification(userInfo,motif,exchange) {
+      async sendNotification(userID,userInfo,motif,exchange) {
         try {
-            let user = await Device.findOne({ userID: userInfo.id });
+            let user = await Device.findOne({ userID: userID });
             if (!user) {
                 console.error('Aucun utilisateur trouvé avec cet ID');
                 return;
