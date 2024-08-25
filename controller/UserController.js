@@ -62,12 +62,10 @@ exports.loginUser = async (req, res) => {
   try {
     const user = await UserRepository.login(username, password, "USER");
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          error:
-            "Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer.",
-        });
+      return res.status(400).json({
+        success: false,
+        error: "Nom d'utilisateur ou mot de passe incorrect. Veuillez réessayer."
+      });
     }
 
     if(serialNumber && tokken){
