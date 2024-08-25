@@ -5,6 +5,7 @@ const Object = require("../models/Object");
 const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
 const DeviceSchemaRepository = require("../service/FireBaseService/DeviceService");
+const Category = require("../models/Category");
 
 exports.findExchanges = async (filters, offset, limit, orderBy = 'created_at', orderDirection = 'DESC') => {
     orderBy = orderBy || 'created_at';
@@ -113,6 +114,11 @@ exports.findExchangeById = async (exchangeId) => {
                         model: Object,
                         as: 'object',
                         attributes: ['id', 'name', 'description', 'image'],
+                        include: {
+                            model: Category,
+                            as: 'category',
+                            attributes: ['id', 'name'],
+                        },
                     },
                 }
             ],
@@ -423,7 +429,7 @@ exports.getHistoriqueExchange = async (userId, status, page, limit) => {
             meeting_place: exchange.meeting_place,
             created_at: exchange.created_at,
             updated_at: exchange.updated_at,
-            date:exchange.date
+            date: exchange.date
         }));
 
         const totalPages = Math.ceil(count / limit);

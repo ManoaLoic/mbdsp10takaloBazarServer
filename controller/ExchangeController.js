@@ -235,13 +235,3 @@ exports.getExchangesBetweenDates = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
-exports.testNotif = async (req, res) => {
-  const { token, motif } = req.body;
-  try {
-    await sendNotifService.sendNotif(token, motif);
-    return res.status(200).json({ message: 'Notif envoyé' });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};

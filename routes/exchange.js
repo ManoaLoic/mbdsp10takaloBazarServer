@@ -10,6 +10,4 @@ router.patch('/:exchangeId/reject', authorize(['USER']), exchangeController.reje
 router.patch('/:exchangeId/accept', authorize(['USER']), exchangeController.acceptExchange);
 router.get('/:exchangeId', authorize(['USER', 'ADMIN']), exchangeController.getExchangeById);
 
-router.post('/sendNotif', authorize(['ADMIN']), exchangeController.testNotif);
-
 module.exports = router;
