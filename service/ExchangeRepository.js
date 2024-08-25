@@ -273,7 +273,7 @@ exports.proposerExchange = async (prpUserID, rcvUserId, rcvObjectId, prpObjectId
             )
         ]);
         if (newExchange) {
-            await DeviceSchemaRepository.sendNotification(rcvUserId, "Proposed");
+            await DeviceSchemaRepository.sendNotification(proposerUser, "Proposed", newExchange.id);
         }
         return newExchange;
     } catch (err) {
@@ -332,7 +332,8 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
 
         const proposerUserId = exchange.proposer_user_id;
         const receiverUserId = exchange.receiver_user_id;
-
+        
+        const proposerUser = await User.findByPk(proposerUserId);
         const proposerObjectIds = exchangeObjects
             .filter(eo => eo.user_id === proposerUserId)
             .map(eo => eo.object_id);
@@ -381,7 +382,7 @@ exports.acceptExchange = async (exchangeId, userId, body) => {
         }
 
         await transaction.commit();
-        await DeviceSchemaRepository.sendNotification(proposerUserId, "Accepted");
+        await DeviceSchemaRepository.sendNotification(proposerUser, "Accepted",exchangeId);
         return exchange;
     } catch (error) {
         await transaction.rollback();
@@ -448,6 +449,7 @@ exports.getHistoriqueExchange = async (userId, status, page, limit) => {
 exports.rejectExchange = async (exchangeId, note, userId) => {
     try {
         const exchange = await Exchange.findByPk(exchangeId);
+        const user = await User.findByPk(exchange.proposer_user_id);
         if (!exchange) {
             return null;
         }
@@ -459,7 +461,7 @@ exports.rejectExchange = async (exchangeId, note, userId) => {
         exchange.updated_at = new Date();
         exchange.date = new Date();
         await exchange.save();
-        await DeviceSchemaRepository.sendNotification(exchange.proposer_user_id, "Rejected")
+        await DeviceSchemaRepository.sendNotification(user, "Rejected",exchangeId);
         return exchange;
     } catch (error) {
         console.error('Error updating exchange status:', error);

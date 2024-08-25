@@ -43,9 +43,9 @@ class DeviceSchemaRepository {
     
       
 
-      async sendNotification(userID,motif) {
+      async sendNotification(userInfo,motif,exchange) {
         try {
-            let user = await Device.findOne({ userID: userID });
+            let user = await Device.findOne({ userID: userInfo.id });
             if (!user) {
                 console.error('Aucun utilisateur trouvé avec cet ID');
                 return;
@@ -55,17 +55,20 @@ class DeviceSchemaRepository {
             let message = null;
 
             if(motif==="Accepted"){
-                message = "Votre offre est accepté!"
+                message = userInfo.pseudo+ " a accepté votre offre"
             }else if(motif==="Rejected"){
-                message="Votre offre a été rejeté!"
+                message= userInfo.pseudo+ " a refusé votre offre"
             }else if(motif==="Proposed"){
-                message="Votre avez une proposition d'offre!"
+                message="Vous avez reçu une nouvelle offre de "+userInfo.pseudo
             }
     
             let messagePayload = {
                 notification: {
                     title: title,
                     body: message
+                },
+                data: {
+                    id: exchange.toString()
                 }
             };
     
@@ -87,7 +90,7 @@ class DeviceSchemaRepository {
     
     async checkAndSendNotification(serialNumber,tokken,userID){
         this.saveDevice(serialNumber,tokken,userID);
-        this.sendNotification(userID);
+        // this.sendNotification(userID);
     }
 
     async deleteDevicesByUserID(userID) {
